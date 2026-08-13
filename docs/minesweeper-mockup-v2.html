@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Minesweeper — Mockup v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* =========================================================================
+   DESIGN TOKENS — built from the supplied palette:
+   472D3C 5E3643 7A444A A05B53 BF7958 EEA160 F4CCA1 B6D53C 71AA34 397B44
+   3C5956 302C2E 5A5353 7D7071 A0938E CFC6B8 DFF6F5 8AEBF1 28CCDF 3978A8
+   394778 39314B 564064 8E478C CD6093 FFAEB6 F4B41B F47E1B E6482E A93B3B
+   827094 4F546B
+   ========================================================================= */
+:root{
+  color-scheme: light;
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-pixel: 'Press Start 2P', 'Courier New', monospace;
+
+  /* ---- light theme roles ---- */
+  --bg: #DFF6F5;
+  --surface: #FFFFFF;
+  --surface-1: #F1FAF9;
+  --surface-variant: #CFC6B8;
+  --outline: #A0938E;
+  --outline-soft: #C9D9D8;
+  --on-bg: #302C2E;
+  --on-surface: #302C2E;
+  --on-surface-muted: #5A5353;
+
+  --primary: #3978A8;
+  --on-primary: #FFFFFF;
+  --primary-container: #8AEBF1;
+  --on-primary-container: #14333F;
+
+  --secondary: #8E478C;
+  --on-secondary: #FFFFFF;
+  --secondary-container: #FFAEB6;
+  --on-secondary-container: #472D3C;
+
+  --tertiary: #F47E1B;
+  --on-tertiary: #33200A;
+
+  --success: #397B44;
+  --success-container: #B6D53C4D;
+  --danger: #E6482E;
+  --danger-container: #E6482E22;
+  --on-danger-container: #7A2113;
+  --warning: #F4B41B;
+
+  --cell-unrevealed: #E8E1D6;
+  --cell-unrevealed-hi: #F6F1E9;
+  --cell-unrevealed-lo: #C7BEAF;
+  --cell-revealed: #F6F9F8;
+  --cell-border: #B9AE9D;
+
+  --n1:#3978A8; --n1-bg:#3978A81A;
+  --n2:#397B44; --n2-bg:#397B441A;
+  --n3:#E6482E; --n3-bg:#E6482E1F;
+  --n4:#564064; --n4-bg:#5640641A;
+  --n5:#A93B3B; --n5-bg:#A93B3B1F;
+  --n6:#1E9AA8; --n6-bg:#28CCDF26;
+  --n7:#302C2E; --n7-bg:#302C2E14;
+  --n8:#7D7071; --n8-bg:#7D70711A;
+
+  --shadow-sm: 0 1px 2px rgba(48,44,46,.08), 0 1px 1px rgba(48,44,46,.05);
+  --shadow-md: 0 6px 20px rgba(48,44,46,.12), 0 2px 6px rgba(48,44,46,.06);
+  --shadow-lg: 0 20px 50px rgba(48,44,46,.24), 0 8px 18px rgba(48,44,46,.10);
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 9px;
+}
+
+html[data-theme="dark"]{
+  color-scheme: dark;
+  --bg: #302C2E;
+  --surface: #39314B;
+  --surface-1: #423A57;
+  --surface-variant: #3C5956;
+  --outline: #7D7071;
+  --outline-soft: #4B4355;
+  --on-bg: #EFEAE3;
+  --on-surface: #EFEAE3;
+  --on-surface-muted: #A0938E;
+
+  --primary: #28CCDF;
+  --on-primary: #10333A;
+  --primary-container: #394778;
+  --on-primary-container: #B9E4FF;
+
+  --secondary: #CD6093;
+  --on-secondary: #33111F;
+  --secondary-container: #564064;
+  --on-secondary-container: #FFD8E8;
+
+  --tertiary: #F4B41B;
+  --on-tertiary: #332200;
+
+  --success: #B6D53C;
+  --success-container: #397B4455;
+  --danger: #FF6B52;
+  --danger-container: #E6482E33;
+  --on-danger-container: #FFD9CF;
+  --warning: #F4B41B;
+
+  --cell-unrevealed: #4F4660;
+  --cell-unrevealed-hi: #5E5471;
+  --cell-unrevealed-lo: #362F45;
+  --cell-revealed: #2B2733;
+  --cell-border: #241F2C;
+
+  --n1:#7CC8F0; --n1-bg:#28CCDF26;
+  --n2:#9FE06B; --n2-bg:#71AA3433;
+  --n3:#FF7A63; --n3-bg:#E6482E33;
+  --n4:#C79BDE; --n4-bg:#8E478C33;
+  --n5:#FFA5A5; --n5-bg:#A93B3B40;
+  --n6:#6FE8F2; --n6-bg:#28CCDF33;
+  --n7:#EFEAE3; --n7-bg:#EFEAE31A;
+  --n8:#A0938E; --n8-bg:#A0938E26;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.35), 0 1px 1px rgba(0,0,0,.25);
+  --shadow-md: 0 8px 24px rgba(0,0,0,.45), 0 3px 8px rgba(0,0,0,.3);
+  --shadow-lg: 0 24px 60px rgba(0,0,0,.55), 0 10px 22px rgba(0,0,0,.35);
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+html,body{ height:100%; }
+body{
+  margin:0; font-family:var(--font-ui); background:var(--bg); color:var(--on-bg);
+  overflow-x:hidden; transition: background-color .25s ease, color .25s ease;
+}
+button{ font-family:inherit; }
+.hidden{ display:none !important; }
+
+/* ---------------------------------------------------------------- layout */
+.app{ min-height:100dvh; display:flex; flex-direction:column; }
+main.screen{ display:none; flex:1; min-height:0; }
+main.screen.active{ display:flex; flex-direction:column; }
+
+.container{ width:100%; max-width:760px; margin:0 auto; padding: 0 20px; }
+
+/* ---------------------------------------------------------------- top bar */
+.topbar{
+  display:flex; align-items:center; gap:8px;
+  padding: max(14px, env(safe-area-inset-top)) 16px 12px;
+  position:sticky; top:0; z-index:20;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom:1px solid var(--outline-soft);
+}
+.topbar .title{
+  font-weight:800; font-size:15px; letter-spacing:-.01em; display:flex; align-items:center; gap:8px;
+}
+.pixel-dot{ width:9px; height:9px; background:var(--primary); box-shadow: 4px 0 0 var(--secondary), 8px 0 0 var(--tertiary); }
+.topbar .spacer{ flex:1; }
+.topbar .diff-chip{
+  font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+  background:var(--primary-container); color:var(--on-primary-container);
+  padding:6px 12px; border-radius:999px;
+}
+
+.icon-btn{
+  width:40px; height:40px; border-radius:12px; border:1px solid transparent;
+  background:transparent; color:var(--on-surface-muted); display:inline-flex; align-items:center; justify-content:center;
+  font-size:18px; cursor:pointer; transition: background .15s ease, color .15s ease, transform .1s ease;
+}
+.icon-btn:hover{ background: var(--surface-variant); color:var(--on-surface); }
+.icon-btn:active{ transform: scale(.92); }
+.icon-btn.primary-tint{ color:var(--primary); }
+
+/* ---------------------------------------------------------------- buttons */
+.btn{
+  appearance:none; border:none; cursor:pointer; font-weight:700; font-size:14.5px;
+  padding:13px 22px; border-radius:14px; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  transition: transform .12s ease, box-shadow .12s ease, background .15s ease, opacity .15s ease;
+}
+.btn:active{ transform: scale(.97); }
+.btn-filled{ background:var(--primary); color:var(--on-primary); box-shadow: var(--shadow-sm); }
+.btn-filled:hover{ box-shadow: var(--shadow-md); }
+.btn-tonal{ background:var(--primary-container); color:var(--on-primary-container); }
+.btn-outline{ background:transparent; color:var(--on-surface); border:1.5px solid var(--outline); }
+.btn-outline:hover{ background:var(--surface-variant); }
+.btn-danger{ background:var(--danger); color:#fff; }
+.btn-text{ background:transparent; color:var(--primary); padding:10px 12px; }
+.btn-block{ width:100%; }
+.btn-sm{ padding:9px 16px; font-size:13px; border-radius:11px; }
+
+/* ================================================================ HOME */
+#screen-home .home-scroll{ flex:1; overflow-y:auto; padding-bottom:40px; }
+.hero{ text-align:center; padding: 28px 20px 8px; }
+.hero .badge{
+  display:inline-flex; align-items:center; gap:8px; font-size:11px; font-weight:700;
+  background:var(--surface-variant); color:var(--on-surface-muted); padding:6px 12px; border-radius:999px; margin-bottom:18px;
+  letter-spacing:.03em; text-transform:uppercase;
+}
+.hero .badge .live-dot{ width:7px; height:7px; border-radius:50%; background:var(--success); }
+.wordmark{
+  font-family:var(--font-pixel); font-size: clamp(20px, 6vw, 30px); line-height:1.5; letter-spacing:1px;
+  color:var(--on-bg); margin: 0 0 14px; text-shadow: 3px 3px 0 var(--primary-container);
+}
+html[data-theme="dark"] .wordmark{ text-shadow: 3px 3px 0 var(--primary-container); }
+.hero p{ color:var(--on-surface-muted); max-width:420px; margin:0 auto 22px; font-size:14.5px; line-height:1.6; }
+
+.mini-preview{
+  display:grid; grid-template-columns: repeat(10, 22px); gap:2px; justify-content:center;
+  width:max-content; margin: 0 auto 26px; padding:10px; background:var(--surface); border-radius:var(--radius-md);
+  box-shadow: var(--shadow-sm); border:1px solid var(--outline-soft);
+}
+.mini-preview .pc{ width:22px; height:22px; border-radius:3px; background:var(--cell-unrevealed); }
+.mini-preview .pc.rv{ background:var(--cell-revealed); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px; }
+.mini-preview .pc.fl{ background: var(--secondary-container); color:var(--danger); display:flex; align-items:center; justify-content:center; font-size:10px; }
+
+.section-label{
+  font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:var(--on-surface-muted);
+  margin: 26px 0 10px; padding: 0 2px;
+}
+
+.diff-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; }
+@media (min-width:520px){ .diff-grid{ grid-template-columns: repeat(4, 1fr); } }
+.diff-card{
+  background:var(--surface); border:1.5px solid var(--outline-soft); border-radius:var(--radius-md);
+  padding:14px 13px; text-align:left; cursor:pointer; transition: all .15s ease; box-shadow: var(--shadow-sm);
+}
+.diff-card:hover{ transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.diff-card.selected{ border-color:var(--primary); background: color-mix(in srgb, var(--primary-container) 45%, var(--surface)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent); }
+.diff-card .name{ font-weight:800; font-size:13.5px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
+.diff-card .radio{ width:15px; height:15px; border-radius:50%; border:1.5px solid var(--outline); flex-shrink:0; }
+.diff-card.selected .radio{ border-color:var(--primary); background:var(--primary); box-shadow: inset 0 0 0 3px var(--surface); }
+.diff-card .meta{ font-family:var(--font-pixel); font-size:9px; color:var(--on-surface-muted); line-height:1.6; }
+.diff-card .best{ margin-top:8px; font-size:10.5px; color:var(--success); font-weight:700; }
+
+.custom-panel{
+  margin-top:12px; background:var(--surface); border:1.5px dashed var(--outline); border-radius:var(--radius-md);
+  padding:14px; display:none; gap:10px; grid-template-columns: repeat(3,1fr);
+}
+.custom-panel.active{ display:grid; }
+.field{ display:flex; flex-direction:column; gap:5px; }
+.field label{ font-size:10.5px; font-weight:700; color:var(--on-surface-muted); text-transform:uppercase; letter-spacing:.03em; }
+.field input{
+  font-family:var(--font-ui); font-weight:700; font-size:15px; padding:9px 10px; border-radius:9px;
+  border:1.5px solid var(--outline-soft); background:var(--surface-1); color:var(--on-surface); width:100%;
+}
+.field input:focus{ outline:2px solid var(--primary); outline-offset:1px; }
+.custom-hint{ grid-column: 1 / -1; font-size:11px; color:var(--on-surface-muted); }
+
+.cta-row{ display:flex; gap:10px; justify-content:center; margin-top:24px; flex-wrap:wrap; padding: 0 4px; }
+
+.footlinks{ display:flex; justify-content:center; gap:18px; margin-top:22px; }
+.footlinks a, .footlinks button{
+  background:none; border:none; font-size:12.5px; font-weight:700; color:var(--on-surface-muted); cursor:pointer;
+  text-decoration:none; display:flex; align-items:center; gap:5px;
+}
+.footlinks a:hover, .footlinks button:hover{ color:var(--primary); }
+
+.install-banner{
+  margin: 26px auto 0; max-width:520px; background:var(--surface); border:1px solid var(--outline-soft);
+  border-radius:var(--radius-md); padding:14px 16px; display:flex; align-items:center; gap:12px; box-shadow: var(--shadow-sm);
+}
+.install-banner .ico{
+  width:38px; height:38px; border-radius:10px; background:var(--tertiary); color:var(--on-tertiary);
+  display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;
+}
+.install-banner .txt{ flex:1; text-align:left; }
+.install-banner .txt b{ display:block; font-size:13px; }
+.install-banner .txt span{ font-size:11.5px; color:var(--on-surface-muted); }
+
+/* ================================================================ GAME */
+#screen-game{ overflow:hidden; }
+.game-body{ flex:1; min-height:0; display:flex; flex-direction:column; padding: 10px 12px max(12px, env(safe-area-inset-bottom)); gap:10px; }
+
+.hud{
+  display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--outline-soft);
+  border-radius:var(--radius-md); padding:10px 14px; box-shadow: var(--shadow-sm); flex-shrink:0;
+}
+.lcd{
+  font-family:var(--font-pixel); font-size: clamp(15px, 4vw, 19px); letter-spacing:2px; font-weight:400;
+  background:#151317; color:var(--danger); padding:8px 10px; border-radius:8px; min-width:70px; text-align:center;
+  box-shadow: inset 0 0 0 2px #000, inset 0 2px 4px rgba(0,0,0,.6);
+}
+.lcd.timer{ color:#63e6f2; }
+.hud-mid{ flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; }
+.status-face{
+  width:44px; height:44px; border-radius:12px; border:1.5px solid var(--outline-soft); background:var(--surface-1);
+  font-size:20px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition: transform .1s ease;
+}
+.status-face:active{ transform: scale(.9); }
+.hud-mid .lbl{ font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--on-surface-muted); }
+
+.mode-hint{
+  text-align:center; font-size:11.5px; color:var(--on-surface-muted); flex-shrink:0; display:flex; align-items:center;
+  justify-content:center; gap:14px; flex-wrap:wrap;
+}
+.mode-hint .kbd{
+  font-family:var(--font-pixel); font-size:9px; background:var(--surface); border:1px solid var(--outline-soft);
+  padding:3px 6px; border-radius:5px; color:var(--on-surface);
+}
+
+.board-frame{
+  position:relative; flex:1; min-height:0; border-radius:var(--radius-lg); background:var(--surface);
+  border:1px solid var(--outline-soft); box-shadow: var(--shadow-md); overflow:hidden;
+}
+/* NOTE: overflow:auto + align/justify-content:center on the SAME element is a well-known
+   CSS trap — content that centers past the start edge becomes unreachable by scroll ("safe
+   center" isn't reliable cross-browser yet). Fix: the scroll container below does NOT center;
+   a plain, non-scrolling inner wrapper does the centering, and grows to fit an oversized board
+   instead of clipping it — so every cell stays reachable by scrolling, at any board size. */
+.board-viewport{
+  position:absolute; inset:0; overflow:auto; -webkit-overflow-scrolling:touch; touch-action: pan-x pan-y;
+  scrollbar-width: thin;
+}
+.board-viewport-inner{
+  box-sizing:border-box; padding:14px;
+  /* width/height:max-content + min-*:100% = "as big as the content needs, but never
+     smaller than the viewport" — this is what actually keeps negative-offset centering
+     overflow at bay (block width:auto fills the container instead of growing to fit
+     content, which is what caused the unreachable-overflow bug in the first place). */
+  width:max-content; min-width:100%; height:max-content; min-height:100%;
+  display:flex; align-items:center; justify-content:center;
+}
+.board{
+  display:grid; gap:2px; background:var(--cell-border); padding:2px; border-radius:8px; flex-shrink:0;
+  box-shadow: var(--shadow-sm); touch-action: pan-x pan-y;
+}
+.cell{
+  width: var(--cell-size, 32px); height: var(--cell-size, 32px);
+  display:flex; align-items:center; justify-content:center; user-select:none; cursor:pointer;
+  font-weight:800; font-size: calc(var(--cell-size, 32px) * 0.44); border-radius:3px;
+  background: var(--cell-unrevealed);
+  box-shadow: inset 2px 2px 0 var(--cell-unrevealed-hi), inset -2px -2px 0 var(--cell-unrevealed-lo);
+  transition: background-color .08s ease;
+}
+.cell:active{ filter: brightness(.96); }
+.cell.revealed{
+  background:var(--cell-revealed); box-shadow: inset 1px 1px 0 rgba(0,0,0,.06); cursor:default;
+}
+.cell.mine{ background:var(--danger-container); color:var(--on-danger-container); box-shadow:none; }
+.cell.mine.exploded{ background:var(--danger); color:#fff; }
+.cell.flagged{ background:var(--secondary-container); color:var(--danger); box-shadow: inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.12); }
+.cell.n1{ color:var(--n1); background-color: var(--n1-bg); }
+.cell.n2{ color:var(--n2); background-color: var(--n2-bg); }
+.cell.n3{ color:var(--n3); background-color: var(--n3-bg); }
+.cell.n4{ color:var(--n4); background-color: var(--n4-bg); }
+.cell.n5{ color:var(--n5); background-color: var(--n5-bg); }
+.cell.n6{ color:var(--n6); background-color: var(--n6-bg); }
+.cell.n7{ color:var(--n7); background-color: var(--n7-bg); }
+.cell.n8{ color:var(--n8); background-color: var(--n8-bg); }
+
+/* scroll-edge cues */
+.edge-fade{ position:absolute; pointer-events:none; opacity:0; transition:opacity .15s ease; z-index:3; }
+.edge-fade.top{ top:0; left:0; right:0; height:26px; background:linear-gradient(to bottom, color-mix(in srgb, var(--surface) 92%, transparent), transparent); }
+.edge-fade.bottom{ bottom:0; left:0; right:0; height:26px; background:linear-gradient(to top, color-mix(in srgb, var(--surface) 92%, transparent), transparent); }
+.edge-fade.left{ top:0; bottom:0; left:0; width:26px; background:linear-gradient(to right, color-mix(in srgb, var(--surface) 92%, transparent), transparent); }
+.edge-fade.right{ top:0; bottom:0; right:0; width:26px; background:linear-gradient(to left, color-mix(in srgb, var(--surface) 92%, transparent), transparent); }
+.board-frame.show-top .edge-fade.top,
+.board-frame.show-bottom .edge-fade.bottom,
+.board-frame.show-left .edge-fade.left,
+.board-frame.show-right .edge-fade.right{ opacity:1; }
+
+/* ================================================================ OVERLAYS */
+.overlay{
+  position:fixed; inset:0; background: rgba(20,18,22,.5); backdrop-filter: blur(3px);
+  display:none; align-items:center; justify-content:center; z-index:60; padding: 20px max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+}
+.overlay.active{ display:flex; }
+.sheet{
+  background:var(--surface); color:var(--on-surface); border-radius:var(--radius-lg); box-shadow: var(--shadow-lg);
+  width:100%; max-width:400px; max-height:88dvh; overflow-y:auto; padding:26px 24px 22px; animation: pop .18s ease;
+}
+@keyframes pop{ from{ opacity:0; transform: scale(.94) translateY(6px); } to{ opacity:1; transform:none; } }
+.sheet-icon{
+  width:58px; height:58px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:26px; margin: 0 auto 16px;
+}
+.sheet.win .sheet-icon{ background:var(--success-container); }
+.sheet.lose .sheet-icon{ background:var(--danger-container); }
+.sheet h2{ margin:0 0 6px; font-size:20px; text-align:center; letter-spacing:-.01em; }
+.sheet p.desc{ margin:0 0 18px; text-align:center; color:var(--on-surface-muted); font-size:13px; }
+.stat-row{ display:flex; gap:10px; margin-bottom:20px; }
+.stat-box{ flex:1; background:var(--surface-1); border:1px solid var(--outline-soft); border-radius:10px; padding:12px 6px; text-align:center; }
+.stat-box .val{ font-family:var(--font-pixel); font-size:15px; }
+.stat-box .lbl{ font-size:10px; color:var(--on-surface-muted); text-transform:uppercase; letter-spacing:.05em; margin-top:5px; }
+.modal-actions{ display:flex; gap:10px; }
+.modal-actions .btn{ flex:1; }
+
+.sheet.settings h2, .sheet.howto h2{ text-align:left; margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; }
+.setting-row{ margin-bottom:20px; }
+.setting-row .setting-label{ font-size:12.5px; font-weight:700; margin-bottom:4px; }
+.setting-row .setting-desc{ font-size:11.5px; color:var(--on-surface-muted); margin-bottom:10px; line-height:1.5; }
+
+.segmented{ display:flex; background:var(--surface-1); border:1px solid var(--outline-soft); border-radius:12px; padding:3px; gap:3px; }
+.segmented button{
+  flex:1; border:none; background:transparent; padding:9px 8px; border-radius:9px; font-weight:700; font-size:12px;
+  color:var(--on-surface-muted); cursor:pointer; transition: all .15s ease;
+}
+.segmented button.active{ background:var(--surface); color:var(--primary); box-shadow: var(--shadow-sm); }
+
+.mode-option{
+  display:flex; gap:10px; align-items:flex-start; padding:11px; border-radius:11px; border:1.5px solid var(--outline-soft);
+  margin-bottom:8px; cursor:pointer; transition: all .15s ease;
+}
+.mode-option.selected{ border-color:var(--primary); background: color-mix(in srgb, var(--primary-container) 35%, var(--surface)); }
+.mode-option .radio{ width:16px; height:16px; border-radius:50%; border:1.5px solid var(--outline); flex-shrink:0; margin-top:2px; }
+.mode-option.selected .radio{ border-color:var(--primary); background:var(--primary); box-shadow: inset 0 0 0 3px var(--surface); }
+.mode-option .t{ font-size:12.5px; font-weight:700; margin-bottom:2px; }
+.mode-option .d{ font-size:11px; color:var(--on-surface-muted); line-height:1.5; }
+
+.howto-rule{ display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--outline-soft); align-items:flex-start; }
+.howto-rule:last-child{ border-bottom:none; }
+.howto-rule .ico{
+  width:32px; height:32px; border-radius:9px; background:var(--primary-container); color:var(--on-primary-container);
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex-shrink:0;
+}
+.howto-rule .t{ font-size:13px; font-weight:700; margin-bottom:2px; }
+.howto-rule .d{ font-size:12px; color:var(--on-surface-muted); line-height:1.55; }
+
+.close-x{
+  width:32px; height:32px; border-radius:9px; border:none; background:var(--surface-1); color:var(--on-surface-muted);
+  cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center;
+}
+
+/* toast */
+.toast{
+  position:fixed; left:50%; bottom: max(22px, env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(12px);
+  background:var(--on-bg); color:var(--bg); padding:12px 18px; border-radius:12px; font-size:12.5px; font-weight:600;
+  box-shadow: var(--shadow-lg); z-index:100; opacity:0; pointer-events:none; transition: all .2s ease; max-width: min(90vw, 360px); text-align:center;
+}
+.toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+
+.screen-tag{
+  position:fixed; top:max(10px, env(safe-area-inset-top)); left:10px; font-family:var(--font-pixel); font-size:8px;
+  color:var(--on-surface-muted); background:var(--surface); border:1px solid var(--outline-soft); padding:5px 8px;
+  border-radius:6px; z-index:90; opacity:.85;
+}
+
+@media (max-width:400px){
+  .diff-grid{ grid-template-columns: repeat(2,1fr); }
+  .custom-panel{ grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ============================================================ HOME -->
+  <main class="screen active" id="screen-home">
+    <div class="screen-tag">mockup · home</div>
+    <div class="home-scroll">
+      <div class="topbar">
+        <span class="title"><span class="pixel-dot"></span>Minesweeper</span>
+        <span class="spacer"></span>
+        <button class="icon-btn" id="btn-theme-quick-home" title="Toggle theme">🌙</button>
+        <button class="icon-btn" id="btn-settings-home" title="Settings">⚙</button>
+      </div>
+
+      <div class="hero">
+        <span class="badge"><span class="live-dot"></span>Static SPA · installable · offline-ready</span>
+        <h1 class="wordmark">MINESWEEPER</h1>
+        <p>Pick a difficulty, reveal your first tile, and clear every safe cell. Choose how taps and long-presses work in Settings — it fits your hand either way.</p>
+        <div class="mini-preview" id="miniPreview"></div>
+      </div>
+
+      <div class="container">
+        <div class="section-label">Difficulty</div>
+        <div class="diff-grid" id="diffGrid"></div>
+
+        <div class="custom-panel" id="customPanel">
+          <div class="field"><label>Rows</label><input type="number" id="customRows" min="5" max="40" value="12"></div>
+          <div class="field"><label>Columns</label><input type="number" id="customCols" min="5" max="40" value="12"></div>
+          <div class="field"><label>Mines</label><input type="number" id="customMines" min="1" max="200" value="20"></div>
+          <div class="custom-hint">Mines are capped below rows × columns − 9 so the first click always has room to open.</div>
+        </div>
+
+        <div class="cta-row">
+          <button class="btn btn-filled" id="btn-play">▶ Play</button>
+          <button class="btn btn-outline" id="btn-howto-home">How to Play</button>
+        </div>
+
+        <div class="install-banner" id="installBanner">
+          <div class="ico">⬇</div>
+          <div class="txt"><b>Install Minesweeper</b><span>Add to your home screen or desktop and play fully offline.</span></div>
+          <button class="btn btn-tonal btn-sm" id="btn-install">Install</button>
+        </div>
+
+        <div class="footlinks">
+          <button id="link-settings">Settings</button>
+          <a href="#" onclick="return false;">Source on GitHub</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================================================ GAME -->
+  <main class="screen" id="screen-game">
+    <div class="screen-tag">mockup · gameplay</div>
+    <div class="topbar">
+      <button class="icon-btn" id="btn-back">←</button>
+      <span class="diff-chip" id="diffChip">Beginner</span>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="btn-theme-quick-game" title="Toggle theme">🌙</button>
+      <button class="icon-btn" id="btn-settings-game" title="Settings">⚙</button>
+    </div>
+
+    <div class="game-body">
+      <div class="hud">
+        <div class="lcd" id="mineCounter">010</div>
+        <div class="hud-mid">
+          <button class="status-face" id="statusFace">🙂</button>
+          <span class="lbl">New Game</span>
+        </div>
+        <div class="lcd timer" id="timerDisplay">000</div>
+      </div>
+
+      <div class="mode-hint" id="modeHint"></div>
+
+      <div class="board-frame" id="boardFrame">
+        <div class="board-viewport" id="boardViewport">
+          <div class="board-viewport-inner">
+            <div class="board" id="board"></div>
+          </div>
+        </div>
+        <div class="edge-fade top"></div>
+        <div class="edge-fade bottom"></div>
+        <div class="edge-fade left"></div>
+        <div class="edge-fade right"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================================================ WIN -->
+  <div class="overlay" id="modal-win">
+    <div class="sheet win">
+      <div class="sheet-icon">🏆</div>
+      <h2>Field cleared!</h2>
+      <p class="desc">Every safe cell revealed. Remaining mines have been flagged for you.</p>
+      <div class="stat-row">
+        <div class="stat-box"><div class="val" id="winTime">047</div><div class="lbl">Seconds</div></div>
+        <div class="stat-box"><div class="val" id="winBest">031</div><div class="lbl">Best time</div></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="win-menu">Menu</button>
+        <button class="btn btn-filled" id="win-again">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ LOSE -->
+  <div class="overlay" id="modal-lose">
+    <div class="sheet lose">
+      <div class="sheet-icon">💥</div>
+      <h2>Game over</h2>
+      <p class="desc">That tile was hiding a mine. The full board is revealed behind this dialog.</p>
+      <div class="stat-row">
+        <div class="stat-box"><div class="val" id="loseTime">018</div><div class="lbl">Seconds</div></div>
+        <div class="stat-box"><div class="val" id="loseFlags">4/10</div><div class="lbl">Flags placed</div></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="lose-menu">Menu</button>
+        <button class="btn btn-filled" id="lose-again">Try Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ SETTINGS -->
+  <div class="overlay" id="modal-settings">
+    <div class="sheet settings">
+      <h2>Settings <button class="close-x" data-close="modal-settings">✕</button></h2>
+
+      <div class="setting-row">
+        <div class="setting-label">Input mode</div>
+        <div class="setting-desc">Choose what a tap does and what a long-press / right-click does. Applies everywhere, on touch and desktop.</div>
+        <div class="mode-option" data-mode="reveal-first">
+          <div class="radio"></div>
+          <div><div class="t">Tap to reveal · Hold to flag</div><div class="d">Default. Quick tap opens a cell; long-press or right-click places a flag.</div></div>
+        </div>
+        <div class="mode-option" data-mode="flag-first">
+          <div class="radio"></div>
+          <div><div class="t">Tap to flag · Hold to reveal</div><div class="d">Quick tap places a flag; long-press or right-click opens the cell.</div></div>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">Theme</div>
+        <div class="setting-desc">Light and dark are both built from the same palette.</div>
+        <div class="segmented" id="themeSegmented">
+          <button data-theme-choice="light">☀ Light</button>
+          <button data-theme-choice="dark">🌙 Dark</button>
+          <button data-theme-choice="system">🖥 System</button>
+        </div>
+      </div>
+
+      <div class="setting-row" style="margin-bottom:6px;">
+        <div class="setting-label">Local data</div>
+        <div class="setting-desc">Settings and best times are stored only in this browser.</div>
+        <button class="btn btn-danger btn-block btn-sm" id="btn-reset-data">Reset local data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ HOW TO PLAY -->
+  <div class="overlay" id="modal-howto">
+    <div class="sheet howto">
+      <h2>How to play <button class="close-x" data-close="modal-howto">✕</button></h2>
+      <div class="howto-rule"><div class="ico">1</div><div><div class="t">Reveal a cell</div><div class="d">Shows a number for how many mines touch it, or clears a whole empty region if it touches none.</div></div></div>
+      <div class="howto-rule"><div class="ico">2</div><div><div class="t">Flag a cell</div><div class="d">Mark a suspected mine. Flagged cells can't be opened by accident.</div></div></div>
+      <div class="howto-rule"><div class="ico">3</div><div><div class="t">Two actions, your choice</div><div class="d">In Settings, pick whether tap reveals and hold flags, or the reverse — same rule for mouse and touch.</div></div></div>
+      <div class="howto-rule"><div class="ico">✕</div><div><div class="t">Win or lose</div><div class="d">Reveal every non-mine cell to win. Reveal a mine and the round ends immediately.</div></div></div>
+      <button class="btn btn-filled btn-block" style="margin-top:16px;" data-close="modal-howto">Got it</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* =========================================================================
+   1) GAME RULES  — ported 1:1 from minesweeper_py (GameLogic / utils)
+   ========================================================================= */
+const DIFFICULTIES = {
+  beginner:     { rows:9,  cols:9,  mines:10, label:'Beginner' },
+  intermediate: { rows:16, cols:16, mines:40, label:'Intermediate' },
+  expert:       { rows:24, cols:24, mines:99, label:'Expert' },
+  custom:       { rows:12, cols:12, mines:20, label:'Custom' },
+};
+
+function neighborsOf(r,c,rows,cols){
+  const out=[];
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+    if(dr===0&&dc===0) continue;
+    const nr=r+dr, nc=c+dc;
+    if(nr>=0&&nr<rows&&nc>=0&&nc<cols) out.push([nr,nc]);
+  }
+  return out;
+}
+
+function createBoard(rows, cols){
+  const board = [];
+  for(let r=0;r<rows;r++){
+    const row=[];
+    for(let c=0;c<cols;c++) row.push({ r, c, mine:false, open:false, flag:false, adj:0 });
+    board.push(row);
+  }
+  return board;
+}
+
+function placeMines(board, rows, cols, mines, excludeR, excludeC){
+  let placed=0;
+  while(placed<mines){
+    const r=Math.floor(Math.random()*rows), c=Math.floor(Math.random()*cols);
+    if(r===excludeR && c===excludeC) continue;
+    if(board[r][c].mine) continue;
+    board[r][c].mine=true; placed++;
+  }
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    if(board[r][c].mine) continue;
+    let n=0;
+    neighborsOf(r,c,rows,cols).forEach(([nr,nc])=>{ if(board[nr][nc].mine) n++; });
+    board[r][c].adj=n;
+  }
+}
+
+/** Reveal starting at (r,c). Mutates board. Matches _open_this_and_neighbour_cells. */
+function revealCell(board, rows, cols, r, c){
+  const cell = board[r][c];
+  if(cell.open || cell.flag) return;
+  if(cell.adj>0){ cell.open=true; return; }
+  const stack=[[r,c]];
+  const seen=new Set();
+  while(stack.length){
+    const [cr,cc]=stack.pop();
+    const key=cr+','+cc;
+    if(seen.has(key)) continue;
+    seen.add(key);
+    const cur=board[cr][cc];
+    const isAlone = !cur.mine && !cur.open && !cur.flag && cur.adj===0;
+    const hasNeighbourMines = !cur.mine && !cur.open && !cur.flag && cur.adj>0;
+    if(isAlone){
+      cur.open=true;
+      neighborsOf(cr,cc,rows,cols).forEach(([nr,nc])=>stack.push([nr,nc]));
+    } else if(hasNeighbourMines){
+      cur.open=true;
+    }
+  }
+}
+
+/* =========================================================================
+   2) STATE LAYER — reducer/store pattern mirroring the intended Redux
+      Toolkit slices ("settings" + "game"). Persists to localStorage.
+   ========================================================================= */
+const STORAGE_KEY = 'minesweeper-mockup-state-v1';
+
+function loadPersisted(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    if(!parsed || typeof parsed !== 'object') return null;
+    return parsed;
+  }catch(e){ return null; } // corrupt/unavailable storage -> fall back to defaults
+}
+
+function systemPrefersDark(){
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+const persisted = loadPersisted();
+
+const initialState = {
+  settings: Object.assign({
+    theme: 'system',
+    inputMode: 'reveal-first',
+    lastDifficulty: 'beginner',
+    bestTimes: { beginner:null, intermediate:null, expert:null, custom:null },
+  }, persisted && persisted.settings ? persisted.settings : {}),
+  game: {
+    difficulty: 'beginner', rows:9, cols:9, mines:10,
+    board: null, status:'idle', // idle | playing | won | lost
+    flagsRemaining:10, seconds:0, firstClickDone:false,
+  },
+};
+
+const ACTIONS = {
+  SET_THEME:'SET_THEME', SET_INPUT_MODE:'SET_INPUT_MODE', SET_BEST_TIME:'SET_BEST_TIME', NEW_GAME:'NEW_GAME',
+  REVEAL:'REVEAL', FLAG:'FLAG', TICK:'TICK', END_GAME:'END_GAME', RESET_DATA:'RESET_DATA',
+};
+
+function reducer(state, action){
+  switch(action.type){
+    case ACTIONS.SET_THEME:
+      return { ...state, settings: { ...state.settings, theme: action.theme } };
+    case ACTIONS.SET_INPUT_MODE:
+      return { ...state, settings: { ...state.settings, inputMode: action.mode } };
+    case ACTIONS.SET_BEST_TIME:
+      return { ...state, settings: { ...state.settings,
+        bestTimes: { ...state.settings.bestTimes, [action.difficulty]: action.seconds } } };
+    case ACTIONS.RESET_DATA:
+      return {
+        settings: { theme:'system', inputMode:'reveal-first', lastDifficulty:'beginner',
+                    bestTimes:{ beginner:null, intermediate:null, expert:null, custom:null } },
+        game: state.game,
+      };
+    default:
+      return gameReducer(state, action);
+  }
+}
+
+/* game-slice reducer, split out for readability */
+function gameReducer(state, action){
+  const g = state.game;
+  switch(action.type){
+    case ACTIONS.NEW_GAME: {
+      const cfg = action.config;
+      const board = createBoard(cfg.rows, cfg.cols);
+      return { ...state,
+        settings: { ...state.settings, lastDifficulty: action.difficulty },
+        game: { difficulty: action.difficulty, rows:cfg.rows, cols:cfg.cols, mines:cfg.mines,
+                board, status:'idle', flagsRemaining:cfg.mines, seconds:0, firstClickDone:false },
+      };
+    }
+    case ACTIONS.REVEAL: {
+      if(g.status==='won' || g.status==='lost') return state;
+      const { r, c } = action;
+      const board = g.board;
+      const cell = board[r][c];
+      if(cell.flag || cell.open) return state;
+      let firstClickDone = g.firstClickDone;
+      if(!firstClickDone){ placeMines(board, g.rows, g.cols, g.mines, r, c); firstClickDone = true; }
+      if(cell.mine){
+        board.forEach(row=>row.forEach(cc=>{ if(cc.mine) cc.open=true; }));
+        cell.exploded = true;
+        return { ...state, game:{ ...g, board, firstClickDone, status:'lost' } };
+      }
+      revealCell(board, g.rows, g.cols, r, c);
+      let opened=0;
+      board.forEach(row=>row.forEach(cc=>{ if(cc.open && !cc.mine) opened++; }));
+      const total = g.rows*g.cols;
+      let status = 'playing';
+      if(opened === total - g.mines){
+        board.forEach(row=>row.forEach(cc=>{ if(cc.mine) cc.flag=true; }));
+        status = 'won';
+      }
+      return { ...state, game:{ ...g, board, firstClickDone, status } };
+    }
+    case ACTIONS.FLAG: {
+      if(g.status==='won' || g.status==='lost') return state;
+      const { r, c } = action;
+      const board = g.board;
+      const cell = board[r][c];
+      if(cell.open) return state;
+      let flagsRemaining = g.flagsRemaining;
+      if(cell.flag){ cell.flag=false; flagsRemaining++; }
+      else if(flagsRemaining>0){ cell.flag=true; flagsRemaining--; }
+      return { ...state, game:{ ...g, board, flagsRemaining } };
+    }
+    case ACTIONS.TICK: {
+      if(g.status!=='playing') return state;
+      return { ...state, game:{ ...g, seconds: Math.min(g.seconds+1, 999) } };
+    }
+    default:
+      return state;
+  }
+}
+
+/* tiny store */
+function createStore(reducerFn, initState){
+  let state = initState;
+  const subs = [];
+  return {
+    getState: ()=>state,
+    dispatch(action){ state = reducerFn(state, action); subs.forEach(fn=>fn(state, action)); },
+    subscribe(fn){ subs.push(fn); },
+  };
+}
+
+const store = createStore(reducer, initialState);
+
+store.subscribe((state)=>{
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ settings: state.settings }));
+  }catch(e){ /* storage unavailable — settings simply won't persist this session */ }
+});
+
+/* =========================================================================
+   3) THEME
+   ========================================================================= */
+function resolveTheme(theme){
+  if(theme==='system') return systemPrefersDark() ? 'dark' : 'light';
+  return theme;
+}
+function applyTheme(){
+  const resolved = resolveTheme(store.getState().settings.theme);
+  document.documentElement.setAttribute('data-theme', resolved);
+  const icon = resolved==='dark' ? '☀' : '🌙';
+  ['btn-theme-quick-home','btn-theme-quick-game'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.textContent = icon;
+  });
+  document.querySelectorAll('#themeSegmented button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.themeChoice === store.getState().settings.theme);
+  });
+}
+if(window.matchMedia){
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
+    if(store.getState().settings.theme==='system') applyTheme();
+  });
+}
+
+/* =========================================================================
+   4) TOAST
+   ========================================================================= */
+let toastTimer=null;
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2200);
+}
+
+/* =========================================================================
+   5) SCREENS / MODALS
+   ========================================================================= */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function openModal(id){ document.getElementById(id).classList.add('active'); }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+document.querySelectorAll('[data-close]').forEach(btn=>{
+  btn.addEventListener('click', ()=>closeModal(btn.dataset.close));
+});
+document.querySelectorAll('.overlay').forEach(ov=>{
+  ov.addEventListener('click', (e)=>{ if(e.target===ov) ov.classList.remove('active'); });
+});
+
+/* =========================================================================
+   6) HOME SCREEN — difficulty picker
+   ========================================================================= */
+let selectedDifficulty = store.getState().settings.lastDifficulty || 'beginner';
+
+function renderDiffGrid(){
+  const grid = document.getElementById('diffGrid');
+  grid.innerHTML = '';
+  const bestTimes = store.getState().settings.bestTimes;
+  Object.keys(DIFFICULTIES).forEach(key=>{
+    const d = DIFFICULTIES[key];
+    const card = document.createElement('div');
+    card.className = 'diff-card' + (key===selectedDifficulty ? ' selected' : '');
+    card.dataset.diff = key;
+    const best = bestTimes[key];
+    card.innerHTML = `
+      <div class="name">${d.label}<span class="radio"></span></div>
+      <div class="meta">${key==='custom' ? 'set your own' : d.rows+'×'+d.cols+' · '+d.mines+' mines'}</div>
+      ${best ? `<div class="best">Best ${String(best).padStart(3,'0')}s</div>` : ''}
+    `;
+    card.addEventListener('click', ()=>{
+      selectedDifficulty = key;
+      renderDiffGrid();
+      document.getElementById('customPanel').classList.toggle('active', key==='custom');
+    });
+    grid.appendChild(card);
+  });
+  document.getElementById('customPanel').classList.toggle('active', selectedDifficulty==='custom');
+}
+
+function getSelectedConfig(){
+  if(selectedDifficulty!=='custom') return DIFFICULTIES[selectedDifficulty];
+  const rows = clamp(parseInt(document.getElementById('customRows').value,10)||9, 5, 40);
+  const cols = clamp(parseInt(document.getElementById('customCols').value,10)||9, 5, 40);
+  const maxMines = Math.max(1, rows*cols-9);
+  const mines = clamp(parseInt(document.getElementById('customMines').value,10)||10, 1, maxMines);
+  return { rows, cols, mines, label:'Custom' };
+}
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+(function buildMiniPreview(){
+  const el = document.getElementById('miniPreview');
+  const pattern = ['n1','','n2','fl','','n1','','','rv','','n3','','n1','','n2','','','n1','n1','','','n2','fl','','fl','','','rv','n1','','','n1'];
+  const need = 40;
+  for(let i=0;i<need;i++){
+    const p = pattern[i%pattern.length] || '';
+    const d = document.createElement('div');
+    if(p==='rv'){ d.className='pc rv'; }
+    else if(p==='fl'){ d.className='pc fl'; d.textContent='⚑'; }
+    else if(p){ d.className='pc rv n'+p.slice(1); d.textContent=p.slice(1); d.style.color=`var(--n${p.slice(1)})`; }
+    else{ d.className='pc'; }
+    el.appendChild(d);
+  }
+})();
+
+/* =========================================================================
+   7) GAME SCREEN — render + interaction
+   ========================================================================= */
+const MIN_CELL = 26, MAX_CELL = 42;
+
+function startGame(config, difficultyKey){
+  store.dispatch({ type: ACTIONS.NEW_GAME, config, difficulty: difficultyKey });
+  document.getElementById('diffChip').textContent = DIFFICULTIES[difficultyKey] ? DIFFICULTIES[difficultyKey].label : 'Custom';
+  showScreen('screen-game');
+  renderModeHint();
+  renderBoard();
+  startTicking();
+}
+
+let tickHandle = null;
+function startTicking(){
+  stopTicking();
+  tickHandle = setInterval(()=>{
+    store.dispatch({ type: ACTIONS.TICK });
+  }, 1000);
+}
+function stopTicking(){ if(tickHandle){ clearInterval(tickHandle); tickHandle=null; } }
+
+function computeCellSize(){
+  const frame = document.getElementById('boardFrame');
+  const g = store.getState().game;
+  if(!g.board) return MAX_CELL;
+  const availW = frame.clientWidth - 28;
+  const availH = frame.clientHeight - 28;
+  const bySize = Math.floor(Math.min(availW / g.cols, availH / g.rows));
+  return clamp(bySize, MIN_CELL, MAX_CELL);
+}
+
+function renderBoard(){
+  const g = store.getState().game;
+  const boardEl = document.getElementById('board');
+  const size = computeCellSize();
+  boardEl.style.setProperty('--cell-size', size+'px');
+  boardEl.style.gridTemplateColumns = `repeat(${g.cols}, var(--cell-size))`;
+  boardEl.innerHTML = '';
+  for(let r=0;r<g.rows;r++){
+    for(let c=0;c<g.cols;c++){
+      const cellEl = document.createElement('div');
+      cellEl.dataset.r = r; cellEl.dataset.c = c;
+      attachCellHandlers(cellEl);
+      boardEl.appendChild(cellEl);
+    }
+  }
+  paintBoard();
+  updateHud();
+  requestAnimationFrame(updateEdgeCues);
+}
+
+function paintBoard(){
+  const g = store.getState().game;
+  if(!g.board) return;
+  document.querySelectorAll('#board > div').forEach(el=>{
+    const r = +el.dataset.r, c = +el.dataset.c;
+    const cell = g.board[r][c];
+    el.className = 'cell';
+    el.textContent = '';
+    if(cell.open){
+      el.classList.add('revealed');
+      if(cell.mine){
+        el.classList.add('mine');
+        if(cell.exploded) el.classList.add('exploded');
+        el.textContent = '●';
+      } else if(cell.adj>0){
+        el.classList.add('n'+cell.adj);
+        el.textContent = cell.adj;
+      }
+    } else if(cell.flag){
+      el.classList.add('flagged');
+      el.textContent = '⚑';
+    }
+  });
+}
+
+function updateHud(){
+  const g = store.getState().game;
+  document.getElementById('mineCounter').textContent = String(Math.max(0,g.flagsRemaining)).padStart(3,'0');
+  document.getElementById('timerDisplay').textContent = String(g.seconds).padStart(3,'0');
+  const face = document.getElementById('statusFace');
+  face.textContent = g.status==='won' ? '😎' : g.status==='lost' ? '😵' : '🙂';
+}
+
+function renderModeHint(){
+  const mode = store.getState().settings.inputMode;
+  const hint = document.getElementById('modeHint');
+  if(mode==='reveal-first'){
+    hint.innerHTML = `<span><span class="kbd">tap</span> reveal</span><span><span class="kbd">hold / right-click</span> flag</span>`;
+  } else {
+    hint.innerHTML = `<span><span class="kbd">tap</span> flag</span><span><span class="kbd">hold / right-click</span> reveal</span>`;
+  }
+}
+
+function doPrimary(r,c){
+  const mode = store.getState().settings.inputMode;
+  store.dispatch({ type: mode==='reveal-first' ? ACTIONS.REVEAL : ACTIONS.FLAG, r, c });
+}
+function doSecondary(r,c){
+  const mode = store.getState().settings.inputMode;
+  store.dispatch({ type: mode==='reveal-first' ? ACTIONS.FLAG : ACTIONS.REVEAL, r, c });
+}
+
+/* touch/mouse long-press handling via Pointer Events */
+const LONG_PRESS_MS = 480, MOVE_CANCEL_PX = 10;
+function attachCellHandlers(el){
+  let timer=null, startX=0, startY=0, longFired=false, suppressClick=false;
+
+  el.addEventListener('pointerdown', (e)=>{
+    if(e.button===2) return; // right click handled separately via contextmenu
+    startX=e.clientX; startY=e.clientY; longFired=false;
+    clearTimeout(timer);
+    timer = setTimeout(()=>{
+      longFired = true; suppressClick = true;
+      doSecondary(+el.dataset.r, +el.dataset.c);
+      if(navigator.vibrate) navigator.vibrate(12);
+    }, LONG_PRESS_MS);
+  });
+  el.addEventListener('pointermove', (e)=>{
+    if(!timer) return;
+    if(Math.abs(e.clientX-startX)>MOVE_CANCEL_PX || Math.abs(e.clientY-startY)>MOVE_CANCEL_PX){
+      clearTimeout(timer); timer=null;
+    }
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(evt=>{
+    el.addEventListener(evt, ()=>{ clearTimeout(timer); timer=null; });
+  });
+  el.addEventListener('click', ()=>{
+    if(suppressClick){ suppressClick=false; return; }
+    doPrimary(+el.dataset.r, +el.dataset.c);
+  });
+  el.addEventListener('contextmenu', (e)=>{
+    e.preventDefault();
+    doSecondary(+el.dataset.r, +el.dataset.c);
+  });
+}
+
+/* scroll-edge cues so an oversized board is never "lost" off-screen */
+function updateEdgeCues(){
+  const vp = document.getElementById('boardViewport');
+  const frame = document.getElementById('boardFrame');
+  const canScrollX = vp.scrollWidth > vp.clientWidth + 1;
+  const canScrollY = vp.scrollHeight > vp.clientHeight + 1;
+  frame.classList.toggle('show-left', canScrollX && vp.scrollLeft > 4);
+  frame.classList.toggle('show-right', canScrollX && vp.scrollLeft < vp.scrollWidth - vp.clientWidth - 4);
+  frame.classList.toggle('show-top', canScrollY && vp.scrollTop > 4);
+  frame.classList.toggle('show-bottom', canScrollY && vp.scrollTop < vp.scrollHeight - vp.clientHeight - 4);
+}
+document.getElementById('boardViewport').addEventListener('scroll', updateEdgeCues, { passive:true });
+window.addEventListener('resize', ()=>{
+  if(document.getElementById('screen-game').classList.contains('active')) renderBoard();
+});
+
+/* =========================================================================
+   8) STORE -> UI  reactions
+   ========================================================================= */
+let lastStatus = 'idle';
+store.subscribe((state)=>{
+  paintBoard();
+  updateHud();
+  if(state.game.status !== lastStatus){
+    lastStatus = state.game.status;
+    if(state.game.status==='won' || state.game.status==='lost'){
+      stopTicking();
+      const key = state.game.difficulty;
+      const seconds = state.game.seconds;
+      if(state.game.status==='won'){
+        const priorBest = state.settings.bestTimes[key];
+        const isNewBest = key!=='custom' && (priorBest===null || priorBest===undefined || seconds<priorBest);
+        if(isNewBest) store.dispatch({ type: ACTIONS.SET_BEST_TIME, difficulty:key, seconds });
+        const bestToShow = isNewBest ? seconds : (priorBest!==null && priorBest!==undefined ? priorBest : seconds);
+        setTimeout(()=>{
+          document.getElementById('winTime').textContent = String(seconds).padStart(3,'0');
+          document.getElementById('winBest').textContent = String(bestToShow).padStart(3,'0');
+          openModal('modal-win');
+        }, 380);
+      } else {
+        setTimeout(()=>{
+          document.getElementById('loseTime').textContent = String(seconds).padStart(3,'0');
+          const g = state.game;
+          const flagsUsed = g.mines - g.flagsRemaining;
+          document.getElementById('loseFlags').textContent = flagsUsed + '/' + g.mines;
+          openModal('modal-lose');
+        }, 380);
+      }
+    }
+  }
+});
+
+/* =========================================================================
+   9) WIRE UP STATIC CONTROLS
+   ========================================================================= */
+renderDiffGrid();
+applyTheme();
+renderModeHint();
+
+document.getElementById('btn-play').addEventListener('click', ()=>{
+  const cfg = getSelectedConfig();
+  startGame(cfg, selectedDifficulty);
+});
+document.getElementById('btn-back').addEventListener('click', ()=>{
+  stopTicking();
+  closeModal('modal-win'); closeModal('modal-lose');
+  renderDiffGrid();
+  showScreen('screen-home');
+});
+document.getElementById('statusFace').addEventListener('click', ()=>{
+  const cfg = getSelectedConfig();
+  startGame(cfg, selectedDifficulty);
+});
+document.getElementById('win-menu').addEventListener('click', ()=>{ closeModal('modal-win'); document.getElementById('btn-back').click(); });
+document.getElementById('lose-menu').addEventListener('click', ()=>{ closeModal('modal-lose'); document.getElementById('btn-back').click(); });
+document.getElementById('win-again').addEventListener('click', ()=>{ closeModal('modal-win'); startGame(getSelectedConfig(), selectedDifficulty); });
+document.getElementById('lose-again').addEventListener('click', ()=>{ closeModal('modal-lose'); startGame(getSelectedConfig(), selectedDifficulty); });
+
+document.getElementById('btn-howto-home').addEventListener('click', ()=>openModal('modal-howto'));
+document.getElementById('btn-settings-home').addEventListener('click', ()=>openModal('modal-settings'));
+document.getElementById('link-settings').addEventListener('click', ()=>openModal('modal-settings'));
+document.getElementById('btn-settings-game').addEventListener('click', ()=>openModal('modal-settings'));
+
+document.getElementById('btn-install').addEventListener('click', ()=>{
+  showToast('In the deployed PWA this button triggers the browser install prompt.');
+});
+
+['btn-theme-quick-home','btn-theme-quick-game'].forEach(id=>{
+  document.getElementById(id).addEventListener('click', ()=>{
+    const resolved = resolveTheme(store.getState().settings.theme);
+    const next = resolved==='dark' ? 'light' : 'dark';
+    store.dispatch({ type: ACTIONS.SET_THEME, theme: next });
+    applyTheme();
+  });
+});
+document.querySelectorAll('#themeSegmented button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    store.dispatch({ type: ACTIONS.SET_THEME, theme: btn.dataset.themeChoice });
+    applyTheme();
+  });
+});
+document.querySelectorAll('.mode-option').forEach(opt=>{
+  opt.addEventListener('click', ()=>{
+    store.dispatch({ type: ACTIONS.SET_INPUT_MODE, mode: opt.dataset.mode });
+    renderModeHint();
+    renderModeOptions();
+    showToast('Input mode updated');
+  });
+});
+function renderModeOptions(){
+  const mode = store.getState().settings.inputMode;
+  document.querySelectorAll('.mode-option').forEach(opt=>{
+    opt.classList.toggle('selected', opt.dataset.mode === mode);
+  });
+}
+renderModeOptions();
+
+document.getElementById('btn-reset-data').addEventListener('click', ()=>{
+  store.dispatch({ type: ACTIONS.RESET_DATA });
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  applyTheme();
+  renderModeHint();
+  renderModeOptions();
+  renderDiffGrid();
+  showToast('Local data reset');
+});
+
+})();
+</script>
+</body>
+</html>
