@@ -1,2 +1,30 @@
-# minesweeper
-Minesweeper game in the web
+# Minesweeper
+
+Private, bilingual Minesweeper PWA built as a static Vite SPA for GitHub Pages at
+`/minesweeper/`.
+
+## Local setup
+
+- Node.js 22.12 or newer
+- `npm ci`
+- `npm run dev`
+
+The application has no runtime server dependency. Local state stays in the browser under one
+versioned `localStorage` record.
+
+## Quality commands
+
+```sh
+npm ci
+npm run format:check
+npm run lint
+npm run typecheck
+npm run test:unit
+npm run build
+npm run validate:artifact
+npm run e2e
+npm run validate
+```
+
+Playwright failure screenshots, videos, traces, and HTML reports are retained in CI. The
+production artifact is always built with the `/minesweeper/` base path before deployment.

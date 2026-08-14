@@ -31,3 +31,13 @@ Use this guide after implementation. It validates the product against the contra
 2. Verify manifest/id/start/scope/icons and conditional install behavior; treat unavailable platform installation as an expected progressive-enhancement outcome, not an error.
 3. Run the two-revision update test. Confirm a waiting release shows Update ready without reloading; choosing it persists the active session before activation. Force persistence failure and confirm no activation/reload occurs.
 4. Inspect the Pages workflow: lockfile install, quality/build/artifact gates before `dist` upload, least-privilege permissions, concurrency protection, and no PR deployment.
+
+## 2026-08-14 validation record
+
+`npm ci`, `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm run test:unit`,
+`npm run build`, `npm run validate:artifact`, and `npm run validate:pages` passed. The complete
+configured Playwright matrix passed 33/33 tests across Chromium, Firefox, and WebKit. The manual
+browser pass verified Home/Play/reveal/flag, immediate Ukrainian Settings rerender, Back/Resume,
+and no page horizontal overflow at 320/768/1440 px. Hosted HTTPS installation, true cold offline
+reopen, and a two-revision update activation remain deployment-origin capability checks documented
+in `release-evidence.md`.

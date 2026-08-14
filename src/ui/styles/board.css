@@ -1,0 +1,69 @@
+.board-viewport {
+  border: 1px solid var(--outline);
+  border-radius: 1rem;
+  max-height: min(62vh, 40rem);
+  max-width: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  position: relative;
+}
+.board-viewport__content {
+  min-height: 100%;
+  min-width: 100%;
+  padding: 0.75rem;
+  width: max-content;
+}
+.board-grid {
+  background: var(--board-grid);
+  border: 4px solid var(--board-grid);
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: max-content;
+}
+.board-row {
+  display: flex;
+  gap: 1px;
+}
+.board-cell {
+  align-items: center;
+  border: 0;
+  display: flex;
+  flex: 0 0 32px;
+  font-weight: 800;
+  height: 32px;
+  justify-content: center;
+  padding: 0;
+  width: 32px;
+}
+.board-cell--hidden,
+.board-cell--flagged {
+  background: var(--board-hidden);
+  box-shadow:
+    inset 2px 2px rgb(255 255 255 / 55%),
+    inset -2px -2px rgb(0 0 0 / 18%);
+  color: var(--danger);
+}
+.board-cell--open-zero,
+.board-cell--open-number {
+  background: var(--board-revealed);
+  color: var(--text);
+}
+.board-cell--open-number {
+  color: var(--number-1);
+}
+.board-cell--open-number:nth-child(2n) {
+  color: var(--number-2);
+}
+.board-cell--open-number:nth-child(3n) {
+  color: var(--number-3);
+}
+.board-cell--mine,
+.board-cell--detonated-mine {
+  background: var(--danger);
+  color: #fff;
+}
+.board-cell--incorrect-flag {
+  background: var(--warning);
+  color: #fff;
+}
