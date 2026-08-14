@@ -1,5 +1,5 @@
 import { applyCommand, cellPresentation, createGame } from '../../../src/domain/gameEngine'
-import { PRESETS, coordinateForIndex } from '../../../src/domain/config'
+import { PRESETS, coordinateForIndex, neighborsOf } from '../../../src/domain/config'
 
 describe('pure game engine', () => {
     it('delays placement and excludes exactly the first revealed cell', () => {
@@ -43,11 +43,31 @@ describe('pure game engine', () => {
         expect(first.cells.filter((cell) => cell.hasMine)).toHaveLength(config.mines)
         expect(first.cells[0].hasMine).toBe(false)
         expect(first.cells.some((cell) => cell.revealed)).toBe(true)
-        expect(
-            first.cells
-                .filter((cell) => cell.neighborMines > 0)
-                .every((cell) => cell.hasMine === false || Number.isInteger(cell.neighborMines)),
-        ).toBe(true)
+        first.cells.forEach((cell, index) => {
+            expect(cell.neighborMines).toBe(
+                neighborsOf(config, index).filter((neighbor) => first.cells[neighbor].hasMine).length,
+            )
+            if (cell.revealed && cell.neighborMines === 0) {
+                expect(neighborsOf(config, index).every((neighbor) => first.cells[neighbor].revealed)).toBe(true)
+            }
+        })
+    })
+
+    it.each(Object.entries(PRESETS))('enforces flag capacity and flagged-reveal clearing for %s', (_, config) => {
+        let game = createGame(config, 234)
+        for (let index = 0; index < config.mines; index += 1) {
+            game = applyCommand(game, { type: 'toggleFlag', coordinate: coordinateForIndex(config, index) })
+        }
+        expect(game.cells.filter((cell) => cell.flagged)).toHaveLength(config.mines)
+        const unchanged = applyCommand(game, {
+            type: 'toggleFlag',
+            coordinate: coordinateForIndex(config, config.mines),
+        })
+        expect(unchanged).toBe(game)
+        const cleared = applyCommand(game, { type: 'reveal', coordinate: coordinateForIndex(config, 0) })
+        expect(cleared.cells[0].flagged).toBe(false)
+        expect(cleared.minesPlaced).toBe(false)
+        expect(cleared.status).toBe('ready')
     })
 
     it.each(Object.entries(PRESETS))('proves terminal rule transitions for %s', (_, config) => {

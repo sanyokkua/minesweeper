@@ -48,5 +48,63 @@ describe('PWA lifecycle gateway', () => {
         onStateChange?.()
 
         expect(onUpdateReady).toHaveBeenCalledOnce()
+        expect((worker as ServiceWorker & { postMessage?: ReturnType<typeof vi.fn> }).postMessage).toBeUndefined()
+    })
+
+    it('waits for controller change before activation resolves', async () => {
+        const onUpdateReady = vi.fn()
+        let onControllerChange: (() => void) | undefined
+        const waiting = { postMessage: vi.fn(), addEventListener: vi.fn() } as unknown as ServiceWorker
+        const registration = {
+            waiting,
+            addEventListener: vi.fn(),
+        } as unknown as ServiceWorkerRegistration
+        Object.defineProperty(navigator, 'serviceWorker', {
+            configurable: true,
+            value: {
+                register: vi.fn().mockResolvedValue(registration),
+                controller: {},
+                addEventListener: (_type: string, listener: () => void) => {
+                    onControllerChange = listener
+                },
+                removeEventListener: vi.fn(),
+            },
+        })
+
+        const pwa = await registerServiceWorker({ onUpdateReady })
+        let resolved = false
+        const activation = pwa.activate().then(() => {
+            resolved = true
+        })
+
+        expect(waiting.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' })
+        await Promise.resolve()
+        expect(resolved).toBe(false)
+
+        onControllerChange?.()
+        await activation
+        expect(resolved).toBe(true)
+    })
+
+    it('rejects activation when the waiting worker cannot be instructed', async () => {
+        const waiting = {
+            postMessage: vi.fn(() => {
+                throw new Error('worker unavailable')
+            }),
+            addEventListener: vi.fn(),
+        } as unknown as ServiceWorker
+        const registration = { waiting, addEventListener: vi.fn() } as unknown as ServiceWorkerRegistration
+        Object.defineProperty(navigator, 'serviceWorker', {
+            configurable: true,
+            value: {
+                register: vi.fn().mockResolvedValue(registration),
+                controller: {},
+                addEventListener: vi.fn(),
+                removeEventListener: vi.fn(),
+            },
+        })
+
+        const pwa = await registerServiceWorker({ onUpdateReady: vi.fn() })
+        await expect(pwa.activate()).rejects.toThrow('worker unavailable')
     })
 })

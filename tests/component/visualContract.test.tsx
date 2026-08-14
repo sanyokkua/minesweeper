@@ -2,6 +2,7 @@ import { render } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { createAppStore } from '../../src/app/store'
 import { Board } from '../../src/ui/components/Board'
+import { getBoardEdgeVisibility } from '../../src/ui/components/boardViewportMetrics'
 import { applyCommand, cellPresentation, createGame } from '../../src/domain/gameEngine'
 describe('visual state contract', () => {
     it('uses semantic state classes for a fresh board', () => {
@@ -42,5 +43,28 @@ describe('visual state contract', () => {
         )
         expect(container.querySelector('.board-viewport-frame')).toBeInTheDocument()
         expect(container.querySelectorAll('[data-edge-cue]')).toHaveLength(4)
+    })
+
+    it('derives only the remaining scroll directions for an oversized board', () => {
+        expect(
+            getBoardEdgeVisibility({
+                scrollTop: 0,
+                scrollLeft: 0,
+                clientWidth: 320,
+                clientHeight: 500,
+                scrollWidth: 800,
+                scrollHeight: 900,
+            }),
+        ).toEqual({ top: false, right: true, bottom: true, left: false })
+        expect(
+            getBoardEdgeVisibility({
+                scrollTop: 400,
+                scrollLeft: 480,
+                clientWidth: 320,
+                clientHeight: 500,
+                scrollWidth: 800,
+                scrollHeight: 900,
+            }),
+        ).toEqual({ top: true, right: false, bottom: false, left: true })
     })
 })

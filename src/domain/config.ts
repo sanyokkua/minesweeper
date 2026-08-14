@@ -7,7 +7,12 @@ export const PRESETS: Record<PresetKind, GameConfig> = {
 }
 
 export function validateConfig(input: unknown): ValidationResult<GameConfig> {
-    if (!input || typeof input !== 'object') return { ok: false, errors: ['Configuration is required.'] }
+    if (!input || typeof input !== 'object' || Array.isArray(input))
+        return { ok: false, errors: ['Configuration is required.'] }
+    const keys = Object.keys(input)
+    if (keys.length !== 4 || !['kind', 'rows', 'columns', 'mines'].every((key) => keys.includes(key))) {
+        return { ok: false, errors: ['Configuration contains unsupported fields.'] }
+    }
     const candidate = input as Partial<GameConfig>
     if (!['beginner', 'intermediate', 'expert', 'custom'].includes(candidate.kind ?? '')) {
         return { ok: false, errors: ['Choose a valid difficulty.'] }
@@ -50,6 +55,8 @@ export function canonicalConfigKey(config: GameConfig): string {
 
 export function indexOf(config: GameConfig, coordinate: Coordinate): number | null {
     if (
+        !Number.isInteger(coordinate.row) ||
+        !Number.isInteger(coordinate.column) ||
         coordinate.row < 0 ||
         coordinate.column < 0 ||
         coordinate.row >= config.rows ||

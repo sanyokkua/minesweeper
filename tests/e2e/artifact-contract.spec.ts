@@ -12,6 +12,16 @@ test('built artifact contains the Pages base and local PWA files', () => {
         expect(existsSync(file)).toBe(true)
 })
 
+test('built artifact precaches both repository-local application fonts', () => {
+    const assets = readdirSync('dist/assets')
+    const worker = readFileSync('dist/sw.js', 'utf8')
+
+    expect(assets.some((file) => file.endsWith('.woff2'))).toBe(true)
+    expect(assets.some((file) => file.endsWith('.ttf'))).toBe(true)
+    expect(worker).toContain('.woff2')
+    expect(worker).toContain('.ttf')
+})
+
 test('built artifact includes a deterministic application build stamp', () => {
     const html = readFileSync('dist/index.html', 'utf8')
     const assets = [html]

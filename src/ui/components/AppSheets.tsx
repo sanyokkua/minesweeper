@@ -54,37 +54,65 @@ export function AppSheets() {
                     </div>
                 </SettingRow>
                 <SettingRow title={t('settings.input')} description={t('settings.inputDescription')}>
-                    <div className="settings-stack">
-                        <ActionButton
-                            variant={inputMode === 'reveal-first' ? 'filled' : 'outline'}
-                            onClick={() => dispatch(setInputMode('reveal-first'))}
-                        >
-                            {t('settings.revealFirst')}
-                        </ActionButton>
-                        <ActionButton
-                            variant={inputMode === 'flag-first' ? 'filled' : 'outline'}
-                            onClick={() => dispatch(setInputMode('flag-first'))}
-                        >
-                            {t('settings.flagFirst')}
-                        </ActionButton>
-                    </div>
-                </SettingRow>
-                <SettingRow title={t('settings.appearance')}>
-                    <div className="segmented">
-                        {(['light', 'dark', 'system'] as const).map((value) => (
-                            <ActionButton
+                    <div className="settings-option-list">
+                        {(
+                            [
+                                ['reveal-first', 'settings.revealFirst', 'settings.revealFirstDescription'],
+                                ['flag-first', 'settings.flagFirst', 'settings.flagFirstDescription'],
+                            ] as const
+                        ).map(([value, title, description]) => (
+                            <button
                                 key={value}
-                                variant={appearance === value ? 'filled' : 'outline'}
-                                onClick={() => dispatch(setAppearance(value))}
+                                type="button"
+                                className={`settings-option ${inputMode === value ? 'is-selected' : ''}`}
+                                aria-pressed={inputMode === value}
+                                onClick={() => dispatch(setInputMode(value))}
                             >
-                                {t(`settings.${value}` as 'settings.light' | 'settings.dark' | 'settings.system')}
-                            </ActionButton>
+                                <span className="settings-option__radio" aria-hidden="true" />
+                                <span className="settings-option__copy">
+                                    <strong>{t(title)}</strong>
+                                    <span>{t(description)}</span>
+                                </span>
+                            </button>
                         ))}
                     </div>
                 </SettingRow>
-                <ActionButton variant="danger" onClick={() => dispatch(openSheet('confirm-reset-data'))}>
-                    {t('settings.resetData')}
-                </ActionButton>
+                <SettingRow title={t('settings.appearance')} description={t('settings.appearanceDescription')}>
+                    <div className="settings-option-list settings-option-list--appearance">
+                        {(
+                            [
+                                ['light', '☀', 'settings.light', 'settings.lightDescription'],
+                                ['dark', '☾', 'settings.dark', 'settings.darkDescription'],
+                                ['system', '◐', 'settings.system', 'settings.systemDescription'],
+                            ] as const
+                        ).map(([value, icon, title, description]) => (
+                            <button
+                                key={value}
+                                type="button"
+                                className={`settings-option settings-option--appearance ${appearance === value ? 'is-selected' : ''}`}
+                                aria-pressed={appearance === value}
+                                onClick={() => dispatch(setAppearance(value))}
+                            >
+                                <span className="settings-option__icon" aria-hidden="true">
+                                    {icon}
+                                </span>
+                                <span className="settings-option__copy">
+                                    <strong>{t(title)}</strong>
+                                    <span>{t(description)}</span>
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                </SettingRow>
+                <div className="settings-danger-row">
+                    <div>
+                        <strong>{t('settings.localData')}</strong>
+                        <p>{t('settings.localDataDescription')}</p>
+                    </div>
+                    <ActionButton variant="danger" onClick={() => dispatch(openSheet('confirm-reset-data'))}>
+                        {t('settings.resetData')}
+                    </ActionButton>
+                </div>
             </ModalSheet>
             <ConfirmSheet
                 open={sheet === 'confirm-reset-data'}

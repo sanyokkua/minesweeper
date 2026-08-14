@@ -16,7 +16,7 @@ export default defineConfig({
             manifest: false,
             workbox: {
                 navigateFallback: '/minesweeper/index.html',
-                globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
+                globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,woff2,ttf}'],
             },
         }),
     ],

@@ -88,8 +88,14 @@ export function App() {
     useEffect(() => {
         if (sessionStatus !== 'playing') return
         const eligible = route === 'game' && documentVisible && blockingSheet === null
-        dispatch(eligible ? resume({ atMs: Date.now() }) : pause({ atMs: Date.now() }))
-    }, [blockingSheet, dispatch, documentVisible, route, sessionStatus])
+        const atMs = Date.now()
+        if (eligible) {
+            dispatch(resume({ atMs }))
+        } else {
+            dispatch(pause({ atMs }))
+            if (blockingSheet !== null && hydrated) persistStore(store)
+        }
+    }, [blockingSheet, dispatch, documentVisible, hydrated, route, sessionStatus, store])
     return (
         <div className="app-shell">
             {route === 'home' ? <HomeScreen /> : <GameScreen />}

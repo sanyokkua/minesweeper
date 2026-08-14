@@ -35,4 +35,20 @@ describe('PWA registration coordinator', () => {
         window.dispatchEvent(new Event('appinstalled'))
         expect(getInstallPrompt()).toBeNull()
     })
+
+    it('does not reload when activation fails after an update is ready', async () => {
+        const activate = vi.fn().mockRejectedValue(new Error('activation failed'))
+        vi.mocked(registerServiceWorker).mockResolvedValue({
+            registration: { waiting: {} } as ServiceWorkerRegistration,
+            update: vi.fn(),
+            activate,
+        })
+        Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+
+        registerPwa(vi.fn(), () => true)
+        await vi.waitFor(() => expect(registerServiceWorker).toHaveBeenCalled())
+
+        await expect(approvePwaUpdate()).resolves.toBe(false)
+        expect(activate).toHaveBeenCalledOnce()
+    })
 })

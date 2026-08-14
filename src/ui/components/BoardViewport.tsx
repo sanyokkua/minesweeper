@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type PropsWithChildren } from 'react'
+import { getBoardEdgeVisibility, type BoardEdgeVisibility } from './boardViewportMetrics'
 
 type Props = PropsWithChildren<{
     rows: number
@@ -9,16 +10,11 @@ type Props = PropsWithChildren<{
 
 export function BoardViewport({ children, rows, columns, ariaLabel = 'Scrollable board viewport', onScroll }: Props) {
     const viewportRef = useRef<HTMLDivElement>(null)
-    const [edges, setEdges] = useState({ top: false, right: false, bottom: false, left: false })
+    const [edges, setEdges] = useState<BoardEdgeVisibility>({ top: false, right: false, bottom: false, left: false })
     const updateEdges = useCallback(() => {
         const element = viewportRef.current
         if (!element) return
-        setEdges({
-            top: element.scrollTop > 1,
-            right: element.scrollLeft + element.clientWidth < element.scrollWidth - 1,
-            bottom: element.scrollTop + element.clientHeight < element.scrollHeight - 1,
-            left: element.scrollLeft > 1,
-        })
+        setEdges(getBoardEdgeVisibility(element))
     }, [])
 
     useEffect(() => {

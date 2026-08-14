@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { createAppStore } from '../../src/app/store'
 import { GameScreen } from '../../src/ui/screens/GameScreen'
@@ -48,5 +48,23 @@ describe('game screen', () => {
         expect(screen.getByText(/every safe cell revealed/i)).toBeInTheDocument()
         expect(screen.getByText(/flags placed/i)).toBeInTheDocument()
         expect(screen.getByText(/flags total/i)).toBeInTheDocument()
+    })
+
+    it('closes only the terminal overlay and keeps the projected board on Game', () => {
+        const store = createAppStore()
+        let session = createGame({ kind: 'custom', rows: 5, columns: 5, mines: 24 }, 4)
+        session = applyCommand(session, { type: 'reveal', coordinate: { row: 0, column: 0 } })
+        store.dispatch(hydrate({ session }))
+
+        render(
+            <Provider store={store}>
+                <GameScreen />
+            </Provider>,
+        )
+
+        fireEvent.click(screen.getByRole('button', { name: /close result/i }))
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+        expect(screen.getByRole('grid')).toBeInTheDocument()
+        expect(screen.getAllByRole('gridcell', { name: /flagged/i })).toHaveLength(24)
     })
 })

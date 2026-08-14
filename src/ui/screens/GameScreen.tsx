@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from 'react-redux'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { navigate, openSheet } from '../../app/appSlice'
@@ -24,6 +24,9 @@ export function GameScreen() {
     const inputMode = useAppSelector((state) => state.preferences.inputMode)
     const appearance = useAppSelector((state) => state.preferences.appearance)
     const seconds = useAppSelector((state) => selectElapsedSeconds(state, Date.now()))
+    const terminalSessionKey =
+        session && (session.status === 'won' || session.status === 'lost') ? `${session.seed}:${session.status}` : null
+    const [dismissedTerminalKey, setDismissedTerminalKey] = useState<string | null>(null)
 
     useEffect(() => {
         if (session?.status === 'won') {
@@ -103,10 +106,12 @@ export function GameScreen() {
                 />
             </div>
             <ModalSheet
-                open={session.status === 'won' || session.status === 'lost'}
+                open={terminalSessionKey !== null && dismissedTerminalKey !== terminalSessionKey}
                 title={session.status === 'won' ? t('game.win') : t('game.loss')}
-                onClose={() => dispatch(navigate('home'))}
-                closeLabel={t('game.menu')}
+                onClose={() => {
+                    if (terminalSessionKey) setDismissedTerminalKey(terminalSessionKey)
+                }}
+                closeLabel={t('game.closeOutcome')}
                 className={session.status === 'won' ? 'outcome-sheet outcome-sheet--win' : 'outcome-sheet'}
                 actions={
                     <>

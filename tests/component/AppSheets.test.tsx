@@ -41,6 +41,24 @@ describe('application sheets', () => {
         expect(container.querySelector('.modal-layer')).toHaveClass('modal-layer--centered')
         expect(screen.getByText(/language/i)).toBeInTheDocument()
         expect(screen.getByText(/input mode/i)).toBeInTheDocument()
-        expect(screen.getByText(/appearance/i)).toBeInTheDocument()
+        expect(screen.getByText('Appearance')).toBeInTheDocument()
+    })
+
+    it('renders descriptive input, appearance, and local-data setting choices', () => {
+        const store = createAppStore()
+        store.dispatch(openSheet('settings'))
+        render(
+            <Provider store={store}>
+                <AppSheets />
+            </Provider>,
+        )
+
+        expect(screen.getByRole('button', { name: /reveal first/i })).toHaveAttribute('aria-pressed', 'true')
+        expect(screen.getByText(/quick tap opens a cell/i)).toBeInTheDocument()
+        expect(screen.getByText(/long-press or right-click opens the cell/i)).toBeInTheDocument()
+        expect(screen.getByText(/same palette/i)).toBeInTheDocument()
+        expect(screen.getByText(/stored only in this browser/i)).toBeInTheDocument()
+        expect(document.querySelectorAll('.settings-option')).toHaveLength(5)
+        expect(document.querySelector('.settings-danger-row')).toBeInTheDocument()
     })
 })

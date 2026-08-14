@@ -22,6 +22,14 @@ type Props = {
     onSecondary?: (index: number) => void
 }
 
+function safelyInvokePointerCapture(action: () => void): void {
+    try {
+        action()
+    } catch {
+        return
+    }
+}
+
 export function Board({ session, inputMode = 'reveal-first', onCommand, onPrimary, onSecondary }: Props) {
     const [focused, setFocused] = useState(0)
     const sessionKey = `${session.config.kind}:${session.config.rows}x${session.config.columns}:${session.config.mines}:${session.seed}`
@@ -29,6 +37,7 @@ export function Board({ session, inputMode = 'reveal-first', onCommand, onPrimar
     const pointer = useRef<PointerSession | null>(null)
     const suppressPrimary = useRef(false)
     const touchGestureCompleted = useRef(false)
+    const touchGestureCancelled = useRef(false)
     const blockingSheet = useAppSelector((state) => state.app.blockingSheet)
     const t = useTranslate()
 
@@ -36,6 +45,7 @@ export function Board({ session, inputMode = 'reveal-first', onCommand, onPrimar
         if (suppressPrimary.current) {
             suppressPrimary.current = false
             touchGestureCompleted.current = false
+            touchGestureCancelled.current = false
             return
         }
         const coordinate = {
@@ -64,8 +74,13 @@ export function Board({ session, inputMode = 'reveal-first', onCommand, onPrimar
             nativeEvent.pointerType === 'touch' ||
             pointer.current !== null ||
             touchGestureCompleted.current ||
+            touchGestureCancelled.current ||
             (nativeEvent.pointerType === undefined && event.button === 0 && navigator.maxTouchPoints > 0)
         if (isTouch) {
+            if (touchGestureCancelled.current) {
+                suppressPrimary.current = true
+                return
+            }
             if (touchGestureCompleted.current) {
                 suppressPrimary.current = true
                 return
@@ -105,8 +120,9 @@ export function Board({ session, inputMode = 'reveal-first', onCommand, onPrimar
     const pointerDown = (event: PointerEvent<HTMLButtonElement>, index: number) => {
         suppressPrimary.current = false
         touchGestureCompleted.current = false
+        touchGestureCancelled.current = false
         if (event.pointerType !== 'touch') return
-        event.currentTarget.setPointerCapture?.(event.pointerId)
+        safelyInvokePointerCapture(() => event.currentTarget.setPointerCapture?.(event.pointerId))
         pointer.current = createPointerSession(event.clientX, event.clientY, () => {
             suppressPrimary.current = true
             touchGestureCompleted.current = true
@@ -114,28 +130,41 @@ export function Board({ session, inputMode = 'reveal-first', onCommand, onPrimar
         })
     }
 
+    const cancelTouchInteraction = (event?: PointerEvent<HTMLButtonElement>) => {
+        cancelPointerSession(pointer.current)
+        pointer.current = null
+        suppressPrimary.current = true
+        touchGestureCompleted.current = false
+        touchGestureCancelled.current = true
+        if (event) safelyInvokePointerCapture(() => event.currentTarget.releasePointerCapture?.(event.pointerId))
+    }
+
     const pointerMove = (event: PointerEvent<HTMLButtonElement>) => {
         if (pointer.current && shouldCancelForMovement(pointer.current, event.clientX, event.clientY)) {
-            cancelPointerSession(pointer.current)
-            pointer.current = null
-            event.currentTarget.releasePointerCapture?.(event.pointerId)
+            cancelTouchInteraction(event)
         }
     }
 
     const pointerUp = (event: PointerEvent<HTMLButtonElement>) => {
         cancelPointerSession(pointer.current)
         pointer.current = null
-        event.currentTarget.releasePointerCapture?.(event.pointerId)
+        safelyInvokePointerCapture(() => event.currentTarget.releasePointerCapture?.(event.pointerId))
     }
 
     useEffect(() => {
         cancelPointerSession(pointer.current)
         pointer.current = null
+        suppressPrimary.current = false
+        touchGestureCompleted.current = false
+        touchGestureCancelled.current = false
         return () => {
             cancelPointerSession(pointer.current)
             pointer.current = null
+            suppressPrimary.current = false
+            touchGestureCompleted.current = false
+            touchGestureCancelled.current = false
         }
-    }, [blockingSheet, session.config.columns, session.config.rows])
+    }, [blockingSheet, session.config.columns, session.config.rows, sessionKey])
 
     useEffect(() => {
         document.getElementById('board-cell-0')?.focus()
@@ -160,7 +189,7 @@ export function Board({ session, inputMode = 'reveal-first', onCommand, onPrimar
                         onPointerDown={pointerDown}
                         onPointerUp={pointerUp}
                         onPointerMove={pointerMove}
-                        onPointerCancel={pointerUp}
+                        onPointerCancel={cancelTouchInteraction}
                         onContextMenu={contextMenu}
                     />
                 )
@@ -173,10 +202,7 @@ export function Board({ session, inputMode = 'reveal-first', onCommand, onPrimar
             rows={session.config.rows}
             columns={session.config.columns}
             ariaLabel={t('game.board')}
-            onScroll={() => {
-                cancelPointerSession(pointer.current)
-                pointer.current = null
-            }}
+            onScroll={() => cancelTouchInteraction()}
         >
             <div
                 className="board-grid"

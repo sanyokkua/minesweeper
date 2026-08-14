@@ -21,7 +21,12 @@ export type PlayerRecordV1 = {
 }
 export type DecodeResult =
     | { ok: true; value: PlayerRecordV1 }
-    | { ok: false; value: PlayerRecordV1; reason: 'empty' | 'malformed' | 'future' | 'invalid' }
+    | {
+          ok: false
+          value: PlayerRecordV1
+          reason: 'empty' | 'malformed' | 'future' | 'invalid'
+          recovered?: boolean
+      }
 
 export function defaultRecord(locale: Locale = 'en'): PlayerRecordV1 {
     return {
@@ -106,7 +111,10 @@ function validSession(value: unknown): value is GameSession {
         return false
     if (
         session.status === 'playing' &&
-        (!session.minesPlaced || Object.prototype.hasOwnProperty.call(session, 'detonatedIndex'))
+        (!session.minesPlaced ||
+            Object.prototype.hasOwnProperty.call(session, 'detonatedIndex') ||
+            session.cells.some((cell) => cell.hasMine && cell.revealed) ||
+            session.cells.every((cell) => cell.hasMine || cell.revealed))
     )
         return false
     if (Object.prototype.hasOwnProperty.call(session, 'detonatedIndex')) {
@@ -126,7 +134,7 @@ function validSession(value: unknown): value is GameSession {
     return true
 }
 
-function validRecord(value: unknown): value is PlayerRecordV1 {
+function validRecordCore(value: unknown): value is Omit<PlayerRecordV1, 'resumableGame'> & { resumableGame?: unknown } {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false
     const record = value as PlayerRecordV1
     const preferences = record.preferences
@@ -164,9 +172,25 @@ function validRecord(value: unknown): value is PlayerRecordV1 {
         ['reveal-first', 'flag-first'].includes(preferences.inputMode) &&
         validateConfig(preferences.selectedConfig).ok &&
         standardValid &&
-        customValid &&
-        (!record.resumableGame || validSession(record.resumableGame))
+        customValid
     )
+}
+
+function validRecord(value: unknown): value is PlayerRecordV1 {
+    return validRecordCore(value) && (!value.resumableGame || validSession(value.resumableGame))
+}
+
+function recoverRecordWithoutResume(value: unknown): PlayerRecordV1 | null {
+    if (!validRecordCore(value)) return null
+    const record = value as PlayerRecordV1
+    if (!Object.prototype.hasOwnProperty.call(record, 'resumableGame') || validSession(record.resumableGame))
+        return null
+    return {
+        version: 1,
+        preferences: record.preferences,
+        standardRecords: record.standardRecords,
+        customRecords: record.customRecords,
+    }
 }
 
 export function decodeStoredRecord(raw: string | null): DecodeResult {
@@ -183,16 +207,87 @@ export function decodeStoredRecord(raw: string | null): DecodeResult {
                         : 'invalid',
             }
         }
-        return validRecord(parsed)
-            ? { ok: true, value: parsed }
+        if (validRecord(parsed)) return { ok: true, value: parsed }
+        const recovered = recoverRecordWithoutResume(parsed)
+        return recovered
+            ? { ok: false, value: recovered, reason: 'invalid', recovered: true }
             : { ok: false, value: defaultRecord(), reason: 'invalid' }
     } catch {
         return { ok: false, value: defaultRecord(), reason: 'malformed' }
     }
 }
 
+function encodeConfig(config: unknown): GameConfig | null {
+    if (!config || typeof config !== 'object' || Array.isArray(config)) return null
+    const value = config as Partial<GameConfig>
+    const result = validateConfig({ kind: value.kind, rows: value.rows, columns: value.columns, mines: value.mines })
+    return result.ok ? result.value : null
+}
+
+function encodeSession(session: unknown): GameSession | undefined {
+    if (!session || typeof session !== 'object' || Array.isArray(session)) return undefined
+    const candidate = session as Partial<GameSession>
+    const config = encodeConfig(candidate.config)
+    if (!config || !Array.isArray(candidate.cells)) return undefined
+    const sanitized: GameSession = {
+        config,
+        cells: candidate.cells.map((cell) => {
+            const value = cell as Partial<Cell>
+            return {
+                hasMine: value.hasMine === true,
+                neighborMines: typeof value.neighborMines === 'number' ? value.neighborMines : -1,
+                revealed: value.revealed === true,
+                flagged: value.flagged === true,
+            }
+        }),
+        seed: candidate.seed ?? -1,
+        minesPlaced: candidate.minesPlaced === true,
+        status: candidate.status ?? 'ready',
+        elapsedMs: candidate.elapsedMs ?? -1,
+    }
+    if (typeof candidate.detonatedIndex === 'number') sanitized.detonatedIndex = candidate.detonatedIndex
+    return validSession(sanitized) ? sanitized : undefined
+}
+
 export function encodeRecord(record: PlayerRecordV1): PlayerRecordV1 {
-    return JSON.parse(JSON.stringify(record)) as PlayerRecordV1
+    const fallback = defaultRecord()
+    const preferences = record.preferences ?? fallback.preferences
+    const selectedConfig = encodeConfig(preferences.selectedConfig) ?? fallback.preferences.selectedConfig
+    const standardRecords: PlayerRecordV1['standardRecords'] = {}
+    for (const kind of ['beginner', 'intermediate', 'expert'] as const) {
+        const entry = record.standardRecords?.[kind]
+        if (entry && validRecordEntry(entry)) standardRecords[kind] = { ...entry }
+    }
+    const customRecords: PlayerRecordV1['customRecords'] = {}
+    for (const [key, entry] of Object.entries(record.customRecords ?? {})) {
+        const match = /^(\d+)x(\d+):(\d+)$/.exec(key)
+        if (!match || !validRecordEntry(entry)) continue
+        const config = {
+            kind: 'custom' as const,
+            rows: Number(match[1]),
+            columns: Number(match[2]),
+            mines: Number(match[3]),
+        }
+        if (validateConfig(config).ok && canonicalConfigKey(config) === key) customRecords[key] = { ...entry }
+    }
+    const encoded: PlayerRecordV1 = {
+        version: 1,
+        preferences: {
+            locale: preferences.locale === 'uk' ? 'uk' : 'en',
+            appearance: ['light', 'dark', 'system'].includes(preferences.appearance)
+                ? preferences.appearance
+                : 'system',
+            inputMode: ['reveal-first', 'flag-first'].includes(preferences.inputMode)
+                ? preferences.inputMode
+                : 'reveal-first',
+            selectedConfig,
+        },
+        standardRecords,
+        customRecords,
+    }
+    const resumableGame = encodeSession(record.resumableGame)
+    if (resumableGame) encoded.resumableGame = resumableGame
+    return encoded
 }
 
 export function statusCanResume(status: GameStatus): boolean {

@@ -58,58 +58,58 @@
 }
 
 .hero {
-    padding: 2rem 1.25rem 0.75rem;
+    padding: 28px 20px 8px;
     text-align: center;
 }
 
 .badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    margin-bottom: 1rem;
-    padding: 0.35rem 0.7rem;
+    gap: 8px;
+    margin-bottom: 18px;
+    padding: 6px 12px;
     border-radius: 999px;
     background: var(--surface-variant);
     color: var(--on-surface-muted);
-    font-size: 0.65rem;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 700;
     letter-spacing: 0.03em;
     text-transform: uppercase;
 }
 
 .live-dot {
-    width: 0.45rem;
-    height: 0.45rem;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: var(--success);
 }
 
 .wordmark {
-    margin: 0 0 0.75rem;
+    margin: 0 0 14px;
     color: var(--on-bg);
     font-family: var(--font-pixel);
-    font-size: clamp(2rem, 5vw, 2.8rem);
-    line-height: 1.25;
-    letter-spacing: 0.08em;
+    font-size: clamp(20px, 6vw, 30px);
+    line-height: 1.5;
+    letter-spacing: 1px;
     text-transform: uppercase;
     text-shadow: 3px 3px 0 var(--primary-container);
 }
 
 .hero > p {
-    max-width: 27rem;
-    margin: 0 auto 1.25rem;
+    max-width: 420px;
+    margin: 0 auto 22px;
     color: var(--on-surface-muted);
-    font-size: 0.9rem;
-    line-height: 1.55;
+    font-size: 14.5px;
+    line-height: 1.6;
 }
 
 .mini-preview {
     display: grid;
-    grid-template-columns: repeat(5, 1.35rem);
-    gap: 0.15rem;
+    grid-template-columns: repeat(10, 22px);
+    gap: 2px;
     width: max-content;
-    margin: 0 auto 1.4rem;
-    padding: 0.6rem;
+    margin: 0 auto 26px;
+    padding: 10px;
     border: 1px solid var(--outline-soft);
     border-radius: var(--radius-md);
     background: var(--surface);
@@ -118,13 +118,13 @@
 
 .preview-cell {
     display: grid;
-    width: 1.35rem;
-    height: 1.35rem;
+    width: 22px;
+    height: 22px;
     place-items: center;
-    border-radius: 0.2rem;
+    border-radius: 3px;
     background: var(--cell-unrevealed);
     color: var(--on-surface);
-    font-size: 0.65rem;
+    font-size: 11px;
     font-weight: 800;
 }
 
@@ -139,10 +139,10 @@
 }
 
 .section-label {
-    margin: 1.25rem 0 0.6rem;
-    padding: 0 0.1rem;
+    margin: 26px 0 10px;
+    padding: 0 2px;
     color: var(--on-surface-muted);
-    font-size: 0.7rem;
+    font-size: 11.5px;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -151,12 +151,17 @@
 .diff-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.65rem;
+    gap: 10px;
+}
+
+@media (min-width: 520px) {
+    .diff-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 }
 
 .diff-card {
-    min-height: 5.6rem;
-    padding: 0.8rem;
+    padding: 14px 13px;
     border: 1.5px solid var(--outline-soft);
     border-radius: var(--radius-md);
     background: var(--surface);
@@ -169,16 +174,16 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    margin-bottom: 0.4rem;
-    font-size: 0.82rem;
+    margin-bottom: 6px;
+    font-size: 13.5px;
 }
 
 .diff-card__meta,
 .diff-card__best {
     display: block;
     color: var(--on-surface-muted);
-    font-size: 0.62rem;
-    line-height: 1.5;
+    font-size: 9px;
+    line-height: 1.6;
 }
 
 .diff-card__meta {
@@ -186,14 +191,14 @@
 }
 
 .diff-card__best {
-    margin-top: 0.35rem;
+    margin-top: 8px;
     color: var(--success);
-    font-weight: 800;
+    font-weight: 700;
 }
 
 .radio {
-    width: 0.95rem;
-    height: 0.95rem;
+    width: 15px;
+    height: 15px;
     flex: 0 0 auto;
     border: 1.5px solid var(--outline);
     border-radius: 50%;
@@ -353,7 +358,7 @@ kbd {
 
 @media (max-width: 400px) {
     .diff-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .custom-panel {

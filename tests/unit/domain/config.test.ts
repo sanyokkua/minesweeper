@@ -14,4 +14,16 @@ describe('game configuration', () => {
         expect(coordinateForIndex(custom.value, 15)).toEqual({ row: 2, column: 3 })
         expect(validateConfig({ kind: 'custom', rows: 4, columns: 6, mines: 1 }).ok).toBe(false)
     })
+
+    it('rejects configuration objects with fields outside the canonical shape', () => {
+        expect(validateConfig({ ...PRESETS.beginner, label: 'Beginner' }).ok).toBe(false)
+        expect(validateConfig({ kind: 'custom', rows: 5, columns: 5, mines: 1, seed: 42 }).ok).toBe(false)
+    })
+
+    it('rejects non-finite and fractional coordinates without producing an invalid index', () => {
+        expect(indexOf(PRESETS.beginner, { row: Number.NaN, column: 0 })).toBeNull()
+        expect(indexOf(PRESETS.beginner, { row: 0, column: Number.POSITIVE_INFINITY })).toBeNull()
+        expect(indexOf(PRESETS.beginner, { row: 1.5, column: 0 })).toBeNull()
+        expect(indexOf(PRESETS.beginner, { row: 0, column: 1.5 })).toBeNull()
+    })
 })

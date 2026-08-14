@@ -13,7 +13,7 @@ export function hydrateStore(store: AppStore, gateway: StorageGateway = createSt
     const decoded = read.ok
         ? decodeStoredRecord(read.value)
         : { ok: false as const, value: defaultRecord(fallbackLocale), reason: 'invalid' as const }
-    const record = decoded.ok ? decoded.value : defaultRecord(fallbackLocale)
+    const record = decoded.ok || decoded.recovered ? decoded.value : defaultRecord(fallbackLocale)
     store.dispatch(setLocale(record.preferences.locale))
     store.dispatch(setAppearance(record.preferences.appearance))
     store.dispatch(setInputMode(record.preferences.inputMode))

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { navigate, openSheet } from '../../app/appSlice'
 import { newGame } from '../../features/game/gameSlice'
@@ -22,6 +22,40 @@ function seed(): number {
 }
 
 const DEFAULT_CUSTOM = { rows: 10, columns: 10, mines: 15 }
+const HOME_PREVIEW_PATTERN = [
+    '1',
+    '',
+    '2',
+    'flag',
+    '',
+    '1',
+    '',
+    '',
+    'revealed',
+    '',
+    '3',
+    '',
+    '1',
+    '',
+    '2',
+    '',
+    '',
+    '1',
+    '1',
+    '',
+    '',
+    '2',
+    'flag',
+    '',
+    'flag',
+    '',
+    '',
+    'revealed',
+    '1',
+    '',
+    '',
+    '1',
+]
 
 export function HomeScreen() {
     const t = useTranslate()
@@ -32,12 +66,14 @@ export function HomeScreen() {
     const resumable = useAppSelector((state) => state.game.resumable)
     const records = useAppSelector((state) => state.persistence)
     const selected = preferences.selectedConfig
-    const selectedCustom = selected.kind === 'custom'
-    const custom = selectedCustom
-        ? { rows: selected.rows, columns: selected.columns, mines: selected.mines }
+    const selectedCustomConfig = selected.kind === 'custom' ? selected : null
+    const selectedCustom = selectedCustomConfig !== null
+    const [customDraftValid, setCustomDraftValid] = useState(true)
+    const custom = selectedCustomConfig
+        ? { rows: selectedCustomConfig.rows, columns: selectedCustomConfig.columns, mines: selectedCustomConfig.mines }
         : DEFAULT_CUSTOM
     const customConfig: GameConfig = { kind: 'custom', ...custom }
-    const customValid = validateConfig(customConfig).ok
+    const customValid = !selectedCustom || customDraftValid
     const best = useMemo(
         () =>
             selected.kind === 'custom'
@@ -45,11 +81,6 @@ export function HomeScreen() {
                 : records.standardRecords[selected.kind],
         [records.customRecords, records.standardRecords, selected],
     )
-
-    const updateCustom = (change: Partial<typeof custom>) => {
-        const next = { ...custom, ...change }
-        dispatch(setSelectedConfig({ kind: 'custom', ...next }))
-    }
 
     const start = () => {
         if (selectedCustom && !customValid) return
@@ -66,8 +97,13 @@ export function HomeScreen() {
     }
 
     const choosePreset = (kind: PresetKind | 'custom') => {
-        const next = kind === 'custom' ? customConfig : PRESETS[kind]
-        dispatch(setSelectedConfig(next))
+        setCustomDraftValid(true)
+        if (kind === 'custom') {
+            const validated = validateConfig(customConfig)
+            if (validated.ok) dispatch(setSelectedConfig(validated.value))
+            return
+        }
+        dispatch(setSelectedConfig(PRESETS[kind]))
     }
 
     return (
@@ -99,15 +135,22 @@ export function HomeScreen() {
                     <h1 className="wordmark">{t('home.title')}</h1>
                     <p>{t('home.subtitle')}</p>
                     <div className="mini-preview" aria-label={t('home.preview')}>
-                        {['', '1', '', '⚑', '2', '', '1', '✹', '', ''].map((value, index) => (
-                            <span
-                                key={`${value}-${index}`}
-                                className={`preview-cell ${value === '⚑' ? 'is-flag' : value ? 'is-revealed' : ''}`}
-                                aria-hidden="true"
-                            >
-                                {value}
-                            </span>
-                        ))}
+                        {Array.from(
+                            { length: 40 },
+                            (_, index) => HOME_PREVIEW_PATTERN[index % HOME_PREVIEW_PATTERN.length],
+                        ).map((value, index) => {
+                            const isFlag = value === 'flag'
+                            const isRevealed = value !== '' && !isFlag
+                            return (
+                                <span
+                                    key={`preview-${index}`}
+                                    className={`preview-cell ${isFlag ? 'is-flag' : isRevealed ? 'is-revealed' : ''}`}
+                                    aria-hidden="true"
+                                >
+                                    {isFlag ? '⚑' : value === 'revealed' ? '' : value}
+                                </span>
+                            )
+                        })}
                     </div>
                 </div>
                 <div className="container">
@@ -152,47 +195,14 @@ export function HomeScreen() {
                             })}
                         </div>
                     </section>
-                    {selectedCustom ? (
-                        <div className="custom-panel active">
-                            <label className="field">
-                                <span>{t('home.rows')}</span>
-                                <input
-                                    aria-label={t('home.rows')}
-                                    type="number"
-                                    min="5"
-                                    max="30"
-                                    value={custom.rows}
-                                    onChange={(event) => updateCustom({ rows: Number(event.target.value) })}
-                                />
-                            </label>
-                            <label className="field">
-                                <span>{t('home.columns')}</span>
-                                <input
-                                    aria-label={t('home.columns')}
-                                    type="number"
-                                    min="5"
-                                    max="30"
-                                    value={custom.columns}
-                                    onChange={(event) => updateCustom({ columns: Number(event.target.value) })}
-                                />
-                            </label>
-                            <label className="field">
-                                <span>{t('home.mines')}</span>
-                                <input
-                                    aria-label={t('home.mines')}
-                                    type="number"
-                                    min="1"
-                                    value={custom.mines}
-                                    onChange={(event) => updateCustom({ mines: Number(event.target.value) })}
-                                />
-                            </label>
-                            <p
-                                className={`custom-hint ${customValid ? '' : 'is-invalid'}`}
-                                role={!customValid ? 'alert' : undefined}
-                            >
-                                {customValid ? t('home.customHint') : t('home.invalidCustom')}
-                            </p>
-                        </div>
+                    {selectedCustomConfig ? (
+                        <CustomFields
+                            key={`${selectedCustomConfig.rows}x${selectedCustomConfig.columns}:${selectedCustomConfig.mines}`}
+                            config={selectedCustomConfig}
+                            valid={customValid}
+                            onValidityChange={setCustomDraftValid}
+                            onValidConfig={(config) => dispatch(setSelectedConfig(config))}
+                        />
                     ) : null}
                     <div className="cta-row">
                         <ActionButton onClick={start} disabled={selectedCustom && !customValid}>
@@ -224,5 +234,75 @@ export function HomeScreen() {
                 </div>
             </div>
         </main>
+    )
+}
+
+type CustomConfig = Extract<GameConfig, { kind: 'custom' }>
+type CustomDraft = Omit<CustomConfig, 'kind'>
+
+function CustomFields({
+    config,
+    valid,
+    onValidityChange,
+    onValidConfig,
+}: {
+    config: CustomConfig
+    valid: boolean
+    onValidityChange: (valid: boolean) => void
+    onValidConfig: (config: CustomConfig) => void
+}) {
+    const t = useTranslate()
+    const [draft, setDraft] = useState<CustomDraft>({
+        rows: config.rows,
+        columns: config.columns,
+        mines: config.mines,
+    })
+
+    const update = (change: Partial<CustomDraft>) => {
+        const next = { ...draft, ...change }
+        setDraft(next)
+        const validated = validateConfig({ kind: 'custom', ...next })
+        onValidityChange(validated.ok)
+        if (validated.ok) onValidConfig({ kind: 'custom', ...next })
+    }
+
+    return (
+        <div className="custom-panel active">
+            <label className="field">
+                <span>{t('home.rows')}</span>
+                <input
+                    aria-label={t('home.rows')}
+                    type="number"
+                    min="5"
+                    max="30"
+                    value={draft.rows}
+                    onChange={(event) => update({ rows: Number(event.target.value) })}
+                />
+            </label>
+            <label className="field">
+                <span>{t('home.columns')}</span>
+                <input
+                    aria-label={t('home.columns')}
+                    type="number"
+                    min="5"
+                    max="30"
+                    value={draft.columns}
+                    onChange={(event) => update({ columns: Number(event.target.value) })}
+                />
+            </label>
+            <label className="field">
+                <span>{t('home.mines')}</span>
+                <input
+                    aria-label={t('home.mines')}
+                    type="number"
+                    min="1"
+                    value={draft.mines}
+                    onChange={(event) => update({ mines: Number(event.target.value) })}
+                />
+            </label>
+            <p className={`custom-hint ${valid ? '' : 'is-invalid'}`} role={!valid ? 'alert' : undefined}>
+                {valid ? t('home.customHint') : t('home.invalidCustom')}
+            </p>
+        </div>
     )
 }

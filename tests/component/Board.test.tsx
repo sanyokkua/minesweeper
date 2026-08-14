@@ -125,4 +125,102 @@ describe('board', () => {
         expect(screen.getByRole('gridcell', { name: /row 1, column 1/i })).toHaveFocus()
         expect(screen.getByRole('gridcell', { name: /row 1, column 1/i })).toHaveAttribute('tabindex', '0')
     })
+
+    it('cancels a pending touch gesture when a same-sized session is replaced', () => {
+        vi.useFakeTimers()
+        const onCommand = vi.fn()
+        const first = createGame({ kind: 'custom', rows: 5, columns: 5, mines: 1 }, 1)
+        const { rerender } = render(
+            <Provider store={createAppStore()}>
+                <Board session={first} onCommand={onCommand} />
+            </Provider>,
+        )
+        const cell = screen.getByRole('gridcell', { name: /row 1, column 2, unopened/i })
+        fireEvent.pointerDown(cell, { pointerId: 1, pointerType: 'touch', clientX: 20, clientY: 20 })
+
+        const replacement = createGame({ kind: 'custom', rows: 5, columns: 5, mines: 1 }, 2)
+        rerender(
+            <Provider store={createAppStore()}>
+                <Board session={replacement} onCommand={onCommand} />
+            </Provider>,
+        )
+        act(() => {
+            vi.advanceTimersByTime(600)
+        })
+
+        expect(onCommand).not.toHaveBeenCalled()
+        vi.useRealTimers()
+    })
+
+    it('cancels a pending touch gesture when the board viewport scrolls', () => {
+        vi.useFakeTimers()
+        const onCommand = vi.fn()
+        const session = createGame({ kind: 'custom', rows: 5, columns: 5, mines: 1 }, 1)
+        render(
+            <Provider store={createAppStore()}>
+                <Board session={session} onCommand={onCommand} />
+            </Provider>,
+        )
+        const cell = screen.getByRole('gridcell', { name: /row 1, column 2, unopened/i })
+        fireEvent.pointerDown(cell, { pointerId: 1, pointerType: 'touch', clientX: 20, clientY: 20 })
+        fireEvent.scroll(document.querySelector('.board-viewport')!)
+        const contextMenu = new MouseEvent('contextmenu', { bubbles: true, button: 0 })
+        Object.defineProperty(contextMenu, 'pointerType', { value: 'touch' })
+        fireEvent(cell, contextMenu)
+        fireEvent.click(cell)
+        act(() => {
+            vi.advanceTimersByTime(600)
+        })
+
+        expect(onCommand).not.toHaveBeenCalled()
+        vi.useRealTimers()
+    })
+
+    it('suppresses fallback actions after touch movement cancellation', () => {
+        const onCommand = vi.fn()
+        const session = createGame({ kind: 'custom', rows: 5, columns: 5, mines: 1 }, 1)
+        render(
+            <Provider store={createAppStore()}>
+                <Board session={session} onCommand={onCommand} />
+            </Provider>,
+        )
+
+        const cell = screen.getByRole('gridcell', { name: /row 1, column 2, unopened/i })
+        fireEvent.pointerDown(cell, { pointerId: 1, pointerType: 'touch', clientX: 20, clientY: 20 })
+        fireEvent.pointerMove(cell, { pointerId: 1, pointerType: 'touch', clientX: 31, clientY: 20 })
+        const contextMenu = new MouseEvent('contextmenu', { bubbles: true, button: 0 })
+        Object.defineProperty(contextMenu, 'pointerType', { value: 'touch' })
+        fireEvent(cell, contextMenu)
+        fireEvent.click(cell)
+
+        expect(onCommand).not.toHaveBeenCalled()
+    })
+
+    it('suppresses fallback actions after pointer cancellation and lost capture', () => {
+        const onCommand = vi.fn()
+        const session = createGame({ kind: 'custom', rows: 5, columns: 5, mines: 1 }, 1)
+        const { rerender } = render(
+            <Provider store={createAppStore()}>
+                <Board session={session} onCommand={onCommand} />
+            </Provider>,
+        )
+
+        const cell = screen.getByRole('gridcell', { name: /row 1, column 2, unopened/i })
+        fireEvent.pointerDown(cell, { pointerId: 1, pointerType: 'touch', clientX: 20, clientY: 20 })
+        fireEvent.pointerCancel(cell, { pointerId: 1, pointerType: 'touch' })
+        fireEvent.click(cell)
+        expect(onCommand).not.toHaveBeenCalled()
+
+        rerender(
+            <Provider store={createAppStore()}>
+                <Board session={session} onCommand={onCommand} />
+            </Provider>,
+        )
+        const replacementCell = screen.getByRole('gridcell', { name: /row 1, column 2, unopened/i })
+        fireEvent.pointerDown(replacementCell, { pointerId: 2, pointerType: 'touch', clientX: 20, clientY: 20 })
+        fireEvent(replacementCell, new Event('lostpointercapture', { bubbles: true }))
+        fireEvent.click(replacementCell)
+
+        expect(onCommand).not.toHaveBeenCalled()
+    })
 })

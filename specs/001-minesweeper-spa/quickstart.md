@@ -34,16 +34,20 @@ Use this guide after implementation. It validates the product against the contra
 
 ## 2026-08-14 validation record
 
-`npm ci`, `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm run test:unit` (25
-files, 60 tests), `npm run build`, `npm run validate:artifact`, and `npm run validate:pages` passed.
-The configured Playwright matrix passed 68 tests with seven documented capability skips across
-Chromium, Firefox, and WebKit. The matrix includes the mockup-aligned Home hierarchy, responsive
-32–40px board cells, centered modal/outcome contracts, deterministic build-stamp artifact checks,
+`npm ci` (519 packages, 0 vulnerabilities), `npm run format:check`, `npm run lint`,
+`npm run typecheck`, `npm run test:unit` (27 files, 85 tests), `npm run build`,
+`npm run validate:artifact`, and `npm run validate:pages` passed. The configured Playwright matrix
+(`npx playwright test --reporter=dot`) passed 109 tests with 14 documented skips across Chromium,
+Firefox, and WebKit. Its Chromium release-environment timing evidence measured 11.8 ms for a visible
+30×30 flag update and 7.5 ms for a visible reveal; Firefox and WebKit skip only that environment-
+specific timing case. The matrix includes the mockup-aligned Home hierarchy, responsive 32–40px
+board cells, centered modal/outcome contracts, deterministic build-stamp artifact checks,
 repository-link and branch-policy checks, and the existing gameplay/persistence journeys. The
-touch regression passed in Chromium and WebKit and verifies that a long-press flag survives a
-delayed context-menu event and follow-up click. The production-artifact Chromium journey served
+touch regression passed in Chromium and WebKit and verifies that movement, cancellation, and
+delayed context-menu/click events cannot create fallback actions after a cancelled gesture. The
+production-artifact Chromium journey served
 `dist` at `/minesweeper/`, reloaded under service-worker control, opened a new offline page, and
 started gameplay; startup install-prompt capture, `appinstalled` cleanup, update-notice
-deduplication, and persistence-safe refusal to activate were also covered. Hosted HTTPS
-installation and a two-revision update activation remain deployment-origin capability checks
-documented in `release-evidence.md`.
+deduplication, canonical persistence recovery, local font precaching, two-revision waiting-worker
+acceptance, and persistence-safe refusal to activate were also covered. Hosted HTTPS installation
+remains a deployment-origin capability check documented in `release-evidence.md`.

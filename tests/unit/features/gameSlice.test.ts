@@ -1,6 +1,6 @@
 import { createAppStore } from '../../../src/app/store'
 import { command, newGame, pause, resume, tick } from '../../../src/features/game/gameSlice'
-import { PRESETS } from '../../../src/domain/config'
+import { PRESETS, coordinateForIndex } from '../../../src/domain/config'
 
 describe('game session reducer', () => {
     it('uses injected timestamps, pauses time, and locks terminal commands', () => {
@@ -22,5 +22,32 @@ describe('game session reducer', () => {
         store.dispatch(command({ command: { type: 'toggleFlag', coordinate: { row: 0, column: 0 } }, atMs: 0 }))
         store.dispatch(command({ command: { type: 'toggleFlag', coordinate: { row: 0, column: 1 } }, atMs: 0 }))
         expect(store.getState().game.session?.cells.filter((cell) => cell.flagged)).toHaveLength(1)
+    })
+
+    it.each(Object.entries(PRESETS))('stops the injected timer on loss and win for %s', (_, config) => {
+        const lostStore = createAppStore()
+        lostStore.dispatch(newGame({ config, seed: 456, atMs: 0 }))
+        lostStore.dispatch(command({ command: { type: 'reveal', coordinate: { row: 0, column: 0 } }, atMs: 100 }))
+        const mineIndex = lostStore.getState().game.session?.cells.findIndex((cell) => cell.hasMine) ?? -1
+        lostStore.dispatch(
+            command({ command: { type: 'reveal', coordinate: coordinateForIndex(config, mineIndex) }, atMs: 1_100 }),
+        )
+        expect(lostStore.getState().game.session?.status).toBe('lost')
+        expect(lostStore.getState().game.session?.elapsedMs).toBe(1_000)
+        expect(lostStore.getState().game.lastTickAtMs).toBeNull()
+
+        const wonStore = createAppStore()
+        wonStore.dispatch(newGame({ config, seed: 789, atMs: 0 }))
+        wonStore.dispatch(command({ command: { type: 'reveal', coordinate: { row: 0, column: 0 } }, atMs: 100 }))
+        for (const [index, cell] of (wonStore.getState().game.session?.cells ?? []).entries()) {
+            if (!cell.hasMine) {
+                wonStore.dispatch(
+                    command({ command: { type: 'reveal', coordinate: coordinateForIndex(config, index) }, atMs: 200 }),
+                )
+            }
+        }
+        expect(wonStore.getState().game.session?.status).toBe('won')
+        expect(wonStore.getState().game.lastTickAtMs).toBeNull()
+        expect(wonStore.getState().game.session?.cells.filter((cell) => cell.flagged)).toHaveLength(config.mines)
     })
 })
