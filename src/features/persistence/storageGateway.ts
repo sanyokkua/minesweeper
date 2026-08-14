@@ -2,45 +2,45 @@ import { STORAGE_KEY } from './recordCodec'
 
 export type StorageResult<T> = { ok: true; value: T } | { ok: false; error: unknown }
 export type StorageGateway = {
-  read: () => StorageResult<string | null>
-  write: (value: string) => StorageResult<void>
-  clear: () => StorageResult<void>
+    read: () => StorageResult<string | null>
+    write: (value: string) => StorageResult<void>
+    clear: () => StorageResult<void>
 }
 
 function defaultStorage(): Storage | null {
-  try {
-    return typeof window === 'undefined' ? null : window.localStorage
-  } catch {
-    return null
-  }
+    try {
+        return typeof window === 'undefined' ? null : window.localStorage
+    } catch {
+        return null
+    }
 }
 export function createStorageGateway(storage: Storage | null = defaultStorage()): StorageGateway {
-  return {
-    read: () => {
-      if (!storage) return { ok: false, error: new Error('localStorage is unavailable') }
-      try {
-        return { ok: true, value: storage.getItem(STORAGE_KEY) }
-      } catch (error) {
-        return { ok: false, error }
-      }
-    },
-    write: (value) => {
-      if (!storage) return { ok: false, error: new Error('localStorage is unavailable') }
-      try {
-        storage?.setItem(STORAGE_KEY, value)
-        return { ok: true, value: undefined }
-      } catch (error) {
-        return { ok: false, error }
-      }
-    },
-    clear: () => {
-      if (!storage) return { ok: false, error: new Error('localStorage is unavailable') }
-      try {
-        storage?.removeItem(STORAGE_KEY)
-        return { ok: true, value: undefined }
-      } catch (error) {
-        return { ok: false, error }
-      }
-    },
-  }
+    return {
+        read: () => {
+            if (!storage) return { ok: false, error: new Error('localStorage is unavailable') }
+            try {
+                return { ok: true, value: storage.getItem(STORAGE_KEY) }
+            } catch (error) {
+                return { ok: false, error }
+            }
+        },
+        write: (value) => {
+            if (!storage) return { ok: false, error: new Error('localStorage is unavailable') }
+            try {
+                storage?.setItem(STORAGE_KEY, value)
+                return { ok: true, value: undefined }
+            } catch (error) {
+                return { ok: false, error }
+            }
+        },
+        clear: () => {
+            if (!storage) return { ok: false, error: new Error('localStorage is unavailable') }
+            try {
+                storage?.removeItem(STORAGE_KEY)
+                return { ok: true, value: undefined }
+            } catch (error) {
+                return { ok: false, error }
+            }
+        },
+    }
 }

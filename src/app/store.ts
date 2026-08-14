@@ -5,14 +5,14 @@ import preferencesReducer from '../features/preferences/preferencesSlice'
 import persistenceReducer from '../features/persistence/persistenceSlice'
 
 export function createAppStore() {
-  return configureStore({
-    reducer: {
-      app: appReducer,
-      game: gameReducer,
-      preferences: preferencesReducer,
-      persistence: persistenceReducer,
-    },
-  })
+    return configureStore({
+        reducer: {
+            app: appReducer,
+            game: gameReducer,
+            preferences: preferencesReducer,
+            persistence: persistenceReducer,
+        },
+    })
 }
 
 export const appStore = createAppStore()

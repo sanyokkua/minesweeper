@@ -12,6 +12,8 @@ Private, bilingual Minesweeper PWA built as a static Vite SPA for GitHub Pages a
 The application has no runtime server dependency. Local state stays in the browser under one
 versioned `localStorage` record.
 
+Project source: https://github.com/sanyokkua/minesweeper
+
 ## Quality commands
 
 ```sh
