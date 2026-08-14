@@ -18,6 +18,7 @@ export function ConfirmSheet({
       open={open}
       title={t('confirm.title')}
       onClose={onCancel}
+      closeLabel={t('confirm.close')}
       actions={
         <>
           <ActionButton variant="outline" onClick={onCancel}>
@@ -28,6 +29,7 @@ export function ConfirmSheet({
           </ActionButton>
         </>
       }
+      className="confirm-sheet"
     >
       <p>{message}</p>
     </ModalSheet>

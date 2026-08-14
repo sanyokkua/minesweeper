@@ -2,6 +2,14 @@ import { createStorageGateway } from '../../../src/features/persistence/storageG
 import { defaultRecord, STORAGE_KEY } from '../../../src/features/persistence/recordCodec'
 
 describe('storage gateway', () => {
+  it('reports unavailable storage instead of silently succeeding', () => {
+    const gateway = createStorageGateway(null)
+
+    expect(gateway.read().ok).toBe(false)
+    expect(gateway.write('x').ok).toBe(false)
+    expect(gateway.clear().ok).toBe(false)
+  })
+
   it('catches read, write and clear failures without throwing', () => {
     const broken = {
       getItem: () => {

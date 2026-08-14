@@ -1,17 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useStore } from 'react-redux'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { navigate, openSheet } from '../../app/appSlice'
-import { command, newGame, pause, tick } from '../../features/game/gameSlice'
+import { command, newGame, pause } from '../../features/game/gameSlice'
 import { persistStore } from '../../features/persistence/persistenceController'
 import type { AppStore } from '../../app/store'
-import { finishRecord } from '../../features/persistence/persistenceSlice'
+import { finishRecord, startRecord } from '../../features/persistence/persistenceSlice'
 import { Board } from '../components/Board'
 import { GameHud } from '../components/GameHud'
 import { ActionButton } from '../components/ActionButton'
 import { ModalSheet } from '../components/ModalSheet'
 import { useTranslate } from '../../i18n/useTranslate'
-import { secondsFor } from '../../features/game/records'
+import { selectElapsedSeconds } from '../../features/game/gameSelectors'
+import { IconAction } from '../components/IconAction'
+import { setAppearance } from '../../features/preferences/preferencesSlice'
 
 export function GameScreen() {
   const t = useTranslate()
@@ -19,19 +21,9 @@ export function GameScreen() {
   const store = useStore() as AppStore
   const session = useAppSelector((state) => state.game.session)
   const inputMode = useAppSelector((state) => state.preferences.inputMode)
-  const lastTickAtMs = useAppSelector((state) => state.game.lastTickAtMs)
-  const [now, setNow] = useState(0)
-  const isPlaying = session?.status === 'playing'
-  useEffect(() => {
-    if (!isPlaying) return
-    const timer = window.setInterval(() => {
-      const atMs = Date.now()
-      setNow(atMs)
-      dispatch(tick({ atMs }))
-      persistStore(store)
-    }, 250)
-    return () => window.clearInterval(timer)
-  }, [dispatch, isPlaying, store])
+  const appearance = useAppSelector((state) => state.preferences.appearance)
+  const seconds = useAppSelector((state) => selectElapsedSeconds(state, Date.now()))
+
   useEffect(() => {
     if (session?.status === 'won') {
       dispatch(
@@ -41,64 +33,86 @@ export function GameScreen() {
     } else if (session?.status === 'lost') {
       persistStore(store)
     }
-  }, [dispatch, session?.status, session?.config, session?.elapsedMs, store])
+  }, [dispatch, session?.config, session?.elapsedMs, session?.status, store])
+
   if (!session)
     return (
-      <main className="screen">
+      <main className="screen empty-screen">
         <p>{t('home.noRecord')}</p>
         <ActionButton onClick={() => dispatch(navigate('home'))}>{t('game.menu')}</ActionButton>
       </main>
     )
-  const seconds = secondsFor(
-    session.elapsedMs +
-      (session.status === 'playing' ? Math.max(0, now - (lastTickAtMs ?? now)) : 0),
-  )
+
   const restart = () => {
-    dispatch(newGame({ config: session.config, seed: Date.now(), atMs: Date.now() }))
+    const atMs = Date.now()
+    dispatch(newGame({ config: session.config, seed: atMs, atMs }))
+    dispatch(startRecord({ config: session.config, atMs }))
+    persistStore(store)
     dispatch(navigate('game'))
   }
   const reset = () => {
-    if (session.status === 'playing') dispatch(openSheet('confirm-reset'))
+    if (session.status === 'playing') dispatch(openSheet('confirm-reset-game'))
     else restart()
   }
+
   return (
     <main className="screen game-screen">
-      <div className="screen-header">
-        <ActionButton
-          variant="text"
+      <div className="topbar">
+        <IconAction
+          label={t('game.back')}
           onClick={() => {
             dispatch(pause({ atMs: Date.now() }))
+            persistStore(store)
             dispatch(navigate('home'))
           }}
         >
-          ← {t('game.back')}
-        </ActionButton>
-        <strong>
+          ←
+        </IconAction>
+        <span className="diff-chip">
           {session.config.kind === 'custom'
             ? `${session.config.rows} × ${session.config.columns}`
             : t(
                 `home.${session.config.kind}` as
                   'home.beginner' | 'home.intermediate' | 'home.expert',
               )}
-        </strong>
-        <ActionButton variant="text" onClick={() => dispatch(openSheet('settings'))}>
-          {t('home.settings')}
-        </ActionButton>
+        </span>
+        <span className="topbar__spacer" />
+        <IconAction
+          label={t('game.toggleTheme')}
+          onClick={() =>
+            dispatch(
+              setAppearance(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'),
+            )
+          }
+        >
+          {appearance === 'dark' ? '☀' : '☾'}
+        </IconAction>
+        <IconAction label={t('home.settings')} onClick={() => dispatch(openSheet('settings'))}>
+          ⚙
+        </IconAction>
       </div>
-      <GameHud session={session} seconds={seconds} onReset={reset} />
-      <p className="game-hint">
-        {inputMode === 'reveal-first' ? t('game.revealFirstHint') : t('game.flagFirstHint')}
-      </p>
-      <Board
-        session={session}
-        inputMode={inputMode}
-        onCommand={(gameCommand) => dispatch(command({ command: gameCommand, atMs: Date.now() }))}
-      />
+      <div className="game-body">
+        <GameHud session={session} seconds={seconds} onReset={reset} />
+        <p className="game-hint">
+          <span>
+            {inputMode === 'reveal-first' ? t('game.revealFirstHint') : t('game.flagFirstHint')}
+          </span>
+          <span className="hint-keys">
+            <kbd>F</kbd> {t('game.keyboardFlag')}
+          </span>
+        </p>
+        <Board
+          session={session}
+          inputMode={inputMode}
+          onCommand={(gameCommand) => dispatch(command({ command: gameCommand, atMs: Date.now() }))}
+        />
+      </div>
       <ModalSheet
         open={session.status === 'won' || session.status === 'lost'}
         title={session.status === 'won' ? t('game.win') : t('game.loss')}
         onClose={() => dispatch(navigate('home'))}
         closeLabel={t('game.menu')}
+        className={session.status === 'won' ? 'outcome-sheet outcome-sheet--win' : 'outcome-sheet'}
         actions={
           <>
             <ActionButton variant="outline" onClick={() => dispatch(navigate('home'))}>
@@ -108,7 +122,10 @@ export function GameScreen() {
           </>
         }
       >
-        <p>
+        <div className="outcome-icon" aria-hidden="true">
+          {session.status === 'won' ? '😎' : '😵'}
+        </div>
+        <p className="outcome-time">
           {t('game.timer')}: <strong>{seconds}s</strong>
         </p>
       </ModalSheet>

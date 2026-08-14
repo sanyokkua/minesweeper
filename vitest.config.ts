@@ -9,6 +9,7 @@ export default defineConfig({
     globals: true,
     css: true,
     include: ['tests/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['tests/e2e/**/*.spec.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

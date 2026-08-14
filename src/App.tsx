@@ -2,8 +2,9 @@ import { useEffect, useRef } from 'react'
 import { useAppDispatch, useAppSelector } from './app/hooks'
 import { useStore } from 'react-redux'
 import type { AppStore } from './app/store'
-import { addNotice, dismissNotice, navigate, setDocumentVisible } from './app/appSlice'
+import { addNotice, dismissNotice, setDocumentVisible } from './app/appSlice'
 import { pause, resume } from './features/game/gameSlice'
+import { clockEligible, startClock } from './features/game/gameClock'
 import { hydrateStore, persistStore } from './features/persistence/persistenceController'
 import { applyTheme, watchSystemTheme } from './app/themeController'
 import { HomeScreen } from './ui/screens/HomeScreen'
@@ -24,12 +25,14 @@ export function App() {
   const booted = useRef(false)
   const route = useAppSelector((state) => state.app.route)
   const blockingSheet = useAppSelector((state) => state.app.blockingSheet)
+  const documentVisible = useAppSelector((state) => state.app.documentVisible)
   const sessionStatus = useAppSelector((state) => state.game.session?.status)
   const hydrated = useAppSelector((state) => state.persistence.hydrated)
   const notices = useAppSelector((state) => state.app.notices)
   const appearance = useAppSelector((state) => state.preferences.appearance)
   const inputMode = useAppSelector((state) => state.preferences.inputMode)
   const locale = useAppSelector((state) => state.preferences.locale)
+  const selectedConfig = useAppSelector((state) => state.preferences.selectedConfig)
   useEffect(() => {
     if (!booted.current) {
       booted.current = true
@@ -46,6 +49,19 @@ export function App() {
       document.documentElement.dataset.theme = theme
     })
   }, [appearance])
+  useEffect(
+    () =>
+      startClock(dispatch, () => {
+        const state = store.getState()
+        return clockEligible({
+          status: state.game.session?.status,
+          route: state.app.route,
+          documentVisible: state.app.documentVisible,
+          blockingSheet: state.app.blockingSheet,
+        })
+      }),
+    [dispatch, store],
+  )
   useEffect(() => {
     document.documentElement.lang = locale
     const handler = () => {
@@ -55,28 +71,26 @@ export function App() {
       if (!visible) persistStore(store)
     }
     document.addEventListener('visibilitychange', handler)
-    return () => document.removeEventListener('visibilitychange', handler)
+    const pagehide = () => {
+      dispatch(pause({ atMs: Date.now() }))
+      persistStore(store)
+    }
+    document.addEventListener('pagehide', pagehide)
+    return () => {
+      document.removeEventListener('visibilitychange', handler)
+      document.removeEventListener('pagehide', pagehide)
+    }
   }, [dispatch, locale, store])
   useEffect(() => {
     if (hydrated) persistStore(store)
-  }, [appearance, hydrated, inputMode, locale, store])
+  }, [appearance, hydrated, inputMode, locale, selectedConfig, store])
   useEffect(() => {
-    if (route !== 'game' || sessionStatus !== 'playing') return
-    dispatch(blockingSheet ? pause({ atMs: Date.now() }) : resume({ atMs: Date.now() }))
-  }, [blockingSheet, dispatch, route, sessionStatus])
+    if (sessionStatus !== 'playing') return
+    const eligible = route === 'game' && documentVisible && blockingSheet === null
+    dispatch(eligible ? resume({ atMs: Date.now() }) : pause({ atMs: Date.now() }))
+  }, [blockingSheet, dispatch, documentVisible, route, sessionStatus])
   return (
     <div className="app-shell">
-      <header className="app-header">
-        <div className="brand">
-          <span className="brand-mark">✹</span>
-          <strong>{t('home.title')}</strong>
-        </div>
-        {route === 'game' ? (
-          <ActionButton variant="text" onClick={() => dispatch(navigate('home'))}>
-            {t('game.menu')}
-          </ActionButton>
-        ) : null}
-      </header>
       {route === 'home' ? <HomeScreen /> : <GameScreen />}
       <AppSheets />
       <div className="notices" aria-live="polite">

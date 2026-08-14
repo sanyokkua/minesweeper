@@ -2,7 +2,14 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
 export type Route = 'home' | 'game'
 export type BlockingSheet =
-  'help' | 'settings' | 'confirm-reset' | 'confirm-replace' | 'win' | 'loss' | null
+  | 'help'
+  | 'settings'
+  | 'confirm-reset-game'
+  | 'confirm-reset-data'
+  | 'confirm-replace'
+  | 'win'
+  | 'loss'
+  | null
 export type Notice = { id: string; message: string; action?: string }
 export type AppState = {
   route: Route

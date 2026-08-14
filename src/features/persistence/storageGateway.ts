@@ -17,13 +17,15 @@ function defaultStorage(): Storage | null {
 export function createStorageGateway(storage: Storage | null = defaultStorage()): StorageGateway {
   return {
     read: () => {
+      if (!storage) return { ok: false, error: new Error('localStorage is unavailable') }
       try {
-        return { ok: true, value: storage?.getItem(STORAGE_KEY) ?? null }
+        return { ok: true, value: storage.getItem(STORAGE_KEY) }
       } catch (error) {
         return { ok: false, error }
       }
     },
     write: (value) => {
+      if (!storage) return { ok: false, error: new Error('localStorage is unavailable') }
       try {
         storage?.setItem(STORAGE_KEY, value)
         return { ok: true, value: undefined }
@@ -32,6 +34,7 @@ export function createStorageGateway(storage: Storage | null = defaultStorage())
       }
     },
     clear: () => {
+      if (!storage) return { ok: false, error: new Error('localStorage is unavailable') }
       try {
         storage?.removeItem(STORAGE_KEY)
         return { ok: true, value: undefined }

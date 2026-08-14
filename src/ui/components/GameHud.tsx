@@ -16,9 +16,12 @@ export function GameHud({
   const t = useTranslate()
   return (
     <div className="game-hud">
-      <StatDisplay label={t('game.flags')} value={flagsRemaining(session)} />
-      <GameFace status={session.status} onReset={onReset} label={t('game.reset')} />
-      <StatDisplay label={t('game.timer')} value={String(seconds).padStart(3, '0')} />
+      <StatDisplay label={t('game.flags')} value={flagsRemaining(session)} tone="flags" />
+      <div className="game-hud__face">
+        <GameFace status={session.status} onReset={onReset} label={t('game.reset')} />
+        <span>{t('game.newGame')}</span>
+      </div>
+      <StatDisplay label={t('game.timer')} value={seconds} tone="timer" />
     </div>
   )
 }

@@ -1,7 +1,12 @@
 import type { Locale } from './catalog'
 import { resolveLocale } from './translate'
+import {
+  decodeStoredRecord,
+  defaultRecord,
+  encodeRecord,
+  STORAGE_KEY,
+} from '../features/persistence/recordCodec'
 
-const LOCALE_KEY = 'minesweeper.locale'
 function defaultStorage(): Storage | null {
   try {
     return typeof window === 'undefined' ? null : window.localStorage
@@ -11,8 +16,8 @@ function defaultStorage(): Storage | null {
 }
 export function readPersistedLocale(storage: Storage | null = defaultStorage()): Locale | null {
   try {
-    const value = storage?.getItem(LOCALE_KEY)
-    return value === 'en' || value === 'uk' ? value : null
+    const decoded = decodeStoredRecord(storage?.getItem(STORAGE_KEY) ?? null)
+    return decoded.ok ? decoded.value.preferences.locale : null
   } catch {
     return null
   }
@@ -25,8 +30,12 @@ export function resolveInitialLocale(
 }
 export function persistLocale(locale: Locale, storage: Storage | null = defaultStorage()): void {
   try {
-    storage?.setItem(LOCALE_KEY, locale)
+    if (!storage) return
+    const current = decodeStoredRecord(storage.getItem(STORAGE_KEY))
+    const record = current.ok ? current.value : defaultRecord()
+    record.preferences.locale = locale
+    storage.setItem(STORAGE_KEY, JSON.stringify(encodeRecord(record)))
   } catch {
-    /* storage is optional */
+    /* persistence failures are reported by the storage controller */
   }
 }

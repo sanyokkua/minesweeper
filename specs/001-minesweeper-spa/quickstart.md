@@ -34,10 +34,13 @@ Use this guide after implementation. It validates the product against the contra
 
 ## 2026-08-14 validation record
 
-`npm ci`, `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm run test:unit`,
-`npm run build`, `npm run validate:artifact`, and `npm run validate:pages` passed. The complete
-configured Playwright matrix passed 33/33 tests across Chromium, Firefox, and WebKit. The manual
-browser pass verified Home/Play/reveal/flag, immediate Ukrainian Settings rerender, Back/Resume,
-and no page horizontal overflow at 320/768/1440 px. Hosted HTTPS installation, true cold offline
-reopen, and a two-revision update activation remain deployment-origin capability checks documented
-in `release-evidence.md`.
+`npm ci`, `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm run test:unit` (24
+files, 54 tests), `npm run build`, `npm run validate:artifact`, and `npm run validate:pages` passed.
+The configured Playwright matrix passed 58 tests with five documented capability skips across
+Chromium, Firefox, and WebKit. The touch regression passed in Chromium and WebKit and verifies
+that a long-press flag survives a delayed context-menu event and follow-up click. The production
+artifact Chromium journey served `dist` at `/minesweeper/`, reloaded under service-worker control,
+opened a new offline page, and started gameplay; install prompting, update-notice deduplication,
+and persistence-safe refusal to activate were also covered. Hosted HTTPS installation and a
+two-revision update activation remain deployment-origin capability checks documented in
+`release-evidence.md`.

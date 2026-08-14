@@ -52,7 +52,7 @@ function reveal(session: GameSession, target: number): GameSession {
   if (cells[target].hasMine) {
     return {
       ...working,
-      cells: cells.map((cell) => ({ ...cell, revealed: true })),
+      cells: cells.map((cell) => (cell.hasMine ? { ...cell, revealed: true } : cell)),
       status: 'lost',
       detonatedIndex: target,
     }

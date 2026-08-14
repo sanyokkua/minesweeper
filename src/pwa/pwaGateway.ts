@@ -12,12 +12,17 @@ export async function registerServiceWorker(callbacks: PwaCallbacks): Promise<Pw
       `${import.meta.env.BASE_URL}sw.js`,
       { scope: import.meta.env.BASE_URL },
     )
-    if (registration.waiting) callbacks.onUpdateReady()
+    let updateReported = false
+    const reportUpdate = () => {
+      if (updateReported) return
+      updateReported = true
+      callbacks.onUpdateReady()
+    }
+    if (registration.waiting) reportUpdate()
     registration.addEventListener('updatefound', () => {
       const worker = registration.installing
       worker?.addEventListener('statechange', () => {
-        if (worker.state === 'installed' && navigator.serviceWorker.controller)
-          callbacks.onUpdateReady()
+        if (worker.state === 'installed' && navigator.serviceWorker.controller) reportUpdate()
       })
     })
     return {

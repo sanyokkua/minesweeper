@@ -9,3 +9,13 @@ test('opens Help and returns to Home from Game', async ({ page }) => {
   await page.getByRole('button', { name: /back to home/i }).click()
   await expect(page.getByRole('heading', { name: 'Minesweeper', exact: true })).toBeVisible()
 })
+
+test('shows the current pointer, touch, keyboard, and mapping guidance', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('button', { name: /how to play/i }).click()
+  const help = page.getByRole('dialog', { name: /how to play/i })
+  await expect(help).toContainText(/right-click/i)
+  await expect(help).toContainText(/600 ms/i)
+  await expect(help).toContainText(/Enter\/Space/i)
+  await expect(help).toContainText(/Reveal first/i)
+})

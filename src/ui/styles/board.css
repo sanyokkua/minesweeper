@@ -1,69 +1,197 @@
+.board-viewport-frame {
+  position: relative;
+  flex: 1;
+  min-height: 12rem;
+  overflow: hidden;
+  border: 1px solid var(--outline-soft);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
 .board-viewport {
-  border: 1px solid var(--outline);
-  border-radius: 1rem;
-  max-height: min(62vh, 40rem);
-  max-width: 100%;
+  position: absolute;
+  inset: 0;
   overflow: auto;
   overscroll-behavior: contain;
-  position: relative;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
 }
+
 .board-viewport__content {
-  min-height: 100%;
-  min-width: 100%;
-  padding: 0.75rem;
+  display: flex;
   width: max-content;
+  min-width: 100%;
+  height: max-content;
+  min-height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem;
 }
+
 .board-grid {
-  background: var(--board-grid);
-  border: 4px solid var(--board-grid);
   display: inline-flex;
   flex-direction: column;
+  flex: 0 0 auto;
   gap: 1px;
-  min-width: max-content;
+  padding: 2px;
+  border-radius: 0.5rem;
+  background: var(--cell-border);
+  box-shadow: var(--shadow-sm);
 }
+
 .board-row {
   display: flex;
   gap: 1px;
 }
+
 .board-cell {
-  align-items: center;
-  border: 0;
-  display: flex;
-  flex: 0 0 32px;
-  font-weight: 800;
-  height: 32px;
-  justify-content: center;
-  padding: 0;
+  display: grid;
   width: 32px;
-}
-.board-cell--hidden,
-.board-cell--flagged {
-  background: var(--board-hidden);
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: var(--cell-unrevealed);
+  color: var(--on-surface);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 900;
+  line-height: 1;
+  user-select: none;
   box-shadow:
-    inset 2px 2px rgb(255 255 255 / 55%),
-    inset -2px -2px rgb(0 0 0 / 18%);
-  color: var(--danger);
+    inset 2px 2px 0 var(--cell-unrevealed-hi),
+    inset -2px -2px 0 var(--cell-unrevealed-lo);
+  transition:
+    background-color 80ms ease,
+    filter 80ms ease;
 }
+
+.board-cell:active {
+  filter: brightness(0.96);
+}
+
 .board-cell--open-zero,
 .board-cell--open-number {
-  background: var(--board-revealed);
-  color: var(--text);
+  background: var(--cell-revealed);
+  box-shadow: inset 1px 1px 0 var(--outline-soft);
+  cursor: default;
 }
-.board-cell--open-number {
-  color: var(--number-1);
+
+.board-cell--number-1 {
+  color: var(--n1);
+  background-color: var(--n1-bg);
 }
-.board-cell--open-number:nth-child(2n) {
-  color: var(--number-2);
+.board-cell--number-2 {
+  color: var(--n2);
+  background-color: var(--n2-bg);
 }
-.board-cell--open-number:nth-child(3n) {
-  color: var(--number-3);
+.board-cell--number-3 {
+  color: var(--n3);
+  background-color: var(--n3-bg);
 }
+.board-cell--number-4 {
+  color: var(--n4);
+  background-color: var(--n4-bg);
+}
+.board-cell--number-5 {
+  color: var(--n5);
+  background-color: var(--n5-bg);
+}
+.board-cell--number-6 {
+  color: var(--n6);
+  background-color: var(--n6-bg);
+}
+.board-cell--number-7 {
+  color: var(--n7);
+  background-color: var(--n7-bg);
+}
+.board-cell--number-8 {
+  color: var(--n8);
+  background-color: var(--n8-bg);
+}
+
+.board-cell--flagged {
+  background: var(--secondary-container);
+  color: var(--danger);
+}
+
 .board-cell--mine,
 .board-cell--detonated-mine {
-  background: var(--danger);
-  color: #fff;
+  background: var(--danger-container);
+  color: var(--on-danger-container);
+  box-shadow: none;
 }
+
+.board-cell--detonated-mine {
+  background: var(--danger);
+  color: var(--on-primary);
+}
+
 .board-cell--incorrect-flag {
   background: var(--warning);
-  color: #fff;
+  color: var(--on-tertiary);
+}
+
+.board-edge-cue {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.board-edge-cue[data-visible='true'] {
+  opacity: 1;
+}
+
+.board-edge-cue--top {
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1.7rem;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--surface) 94%, transparent),
+    transparent
+  );
+}
+
+.board-edge-cue--right {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1.7rem;
+  background: linear-gradient(
+    to left,
+    color-mix(in srgb, var(--surface) 94%, transparent),
+    transparent
+  );
+}
+
+.board-edge-cue--bottom {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1.7rem;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--surface) 94%, transparent),
+    transparent
+  );
+}
+
+.board-edge-cue--left {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1.7rem;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--surface) 94%, transparent),
+    transparent
+  );
 }

@@ -1,4 +1,12 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+  type PointerEvent,
+} from 'react'
+import { useAppSelector } from '../../app/hooks'
 import type { GameCommand, GameSession } from '../../domain/gameTypes'
 import { primaryCommand, secondaryCommand } from '../../features/preferences/inputMode'
 import type { InputMode } from '../../features/persistence/recordCodec'
@@ -20,6 +28,7 @@ type Props = {
   onPrimary?: (index: number) => void
   onSecondary?: (index: number) => void
 }
+
 export function Board({
   session,
   inputMode = 'reveal-first',
@@ -28,12 +37,18 @@ export function Board({
   onSecondary,
 }: Props) {
   const [focused, setFocused] = useState(0)
+  const sessionKey = `${session.config.kind}:${session.config.rows}x${session.config.columns}:${session.config.mines}:${session.seed}`
+  const [focusedSessionKey, setFocusedSessionKey] = useState(sessionKey)
   const pointer = useRef<PointerSession | null>(null)
   const suppressPrimary = useRef(false)
+  const touchGestureCompleted = useRef(false)
+  const blockingSheet = useAppSelector((state) => state.app.blockingSheet)
   const t = useTranslate()
+
   const primary = (index: number) => {
     if (suppressPrimary.current) {
       suppressPrimary.current = false
+      touchGestureCompleted.current = false
       return
     }
     const coordinate = {
@@ -43,6 +58,7 @@ export function Board({
     if (onPrimary) onPrimary(index)
     else onCommand?.(primaryCommand(inputMode, coordinate))
   }
+
   const secondary = (index: number) =>
     onSecondary?.(index) ??
     onCommand?.(
@@ -51,25 +67,95 @@ export function Board({
         column: index % session.config.columns,
       }),
     )
-  const keyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) =>
-    BoardKeyboardController(event, index, session, primary, secondary)
+
+  const contextMenu = (event: MouseEvent<HTMLButtonElement>, index: number) => {
+    event.preventDefault()
+    const nativeEvent = event.nativeEvent as MouseEvent<HTMLButtonElement>['nativeEvent'] & {
+      pointerType?: string
+    }
+    const isTouch =
+      nativeEvent.pointerType === 'touch' ||
+      pointer.current !== null ||
+      touchGestureCompleted.current ||
+      (nativeEvent.pointerType === undefined && event.button === 0 && navigator.maxTouchPoints > 0)
+    if (isTouch) {
+      if (touchGestureCompleted.current) {
+        suppressPrimary.current = true
+        return
+      }
+      touchGestureCompleted.current = true
+      const activePointer = pointer.current
+      if (activePointer?.longPressCompleted) {
+        suppressPrimary.current = true
+        return
+      }
+      if (activePointer) {
+        activePointer.longPressCompleted = true
+        cancelPointerSession(activePointer)
+      }
+      suppressPrimary.current = true
+    }
+    secondary(index)
+  }
+
+  const scrollCellIntoView = (index: number) => {
+    const cell = document.getElementById(`board-cell-${index}`)
+    const viewport = cell?.closest('.board-viewport') as HTMLElement | null
+    if (!cell || !viewport) return
+    const cellRect = cell.getBoundingClientRect()
+    const viewportRect = viewport.getBoundingClientRect()
+    if (cellRect.top < viewportRect.top) viewport.scrollTop -= viewportRect.top - cellRect.top
+    if (cellRect.bottom > viewportRect.bottom)
+      viewport.scrollTop += cellRect.bottom - viewportRect.bottom
+    if (cellRect.left < viewportRect.left) viewport.scrollLeft -= viewportRect.left - cellRect.left
+    if (cellRect.right > viewportRect.right)
+      viewport.scrollLeft += cellRect.right - viewportRect.right
+  }
+
+  const keyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const next = BoardKeyboardController(event, index, session, primary, secondary)
+    if (next !== null) scrollCellIntoView(next)
+  }
+
   const pointerDown = (event: PointerEvent<HTMLButtonElement>, index: number) => {
+    suppressPrimary.current = false
+    touchGestureCompleted.current = false
     if (event.pointerType !== 'touch') return
+    event.currentTarget.setPointerCapture?.(event.pointerId)
     pointer.current = createPointerSession(event.clientX, event.clientY, () => {
       suppressPrimary.current = true
+      touchGestureCompleted.current = true
       secondary(index)
     })
   }
+
   const pointerMove = (event: PointerEvent<HTMLButtonElement>) => {
-    if (pointer.current && shouldCancelForMovement(pointer.current, event.clientX, event.clientY))
+    if (pointer.current && shouldCancelForMovement(pointer.current, event.clientX, event.clientY)) {
       cancelPointerSession(pointer.current)
+      pointer.current = null
+      event.currentTarget.releasePointerCapture?.(event.pointerId)
+    }
   }
-  const pointerUp = () => {
-    const session = pointer.current
-    cancelPointerSession(session)
+
+  const pointerUp = (event: PointerEvent<HTMLButtonElement>) => {
+    cancelPointerSession(pointer.current)
     pointer.current = null
+    event.currentTarget.releasePointerCapture?.(event.pointerId)
   }
-  useEffect(() => () => cancelPointerSession(pointer.current), [])
+
+  useEffect(() => {
+    cancelPointerSession(pointer.current)
+    pointer.current = null
+    return () => {
+      cancelPointerSession(pointer.current)
+      pointer.current = null
+    }
+  }, [blockingSheet, session.config.columns, session.config.rows])
+
+  useEffect(() => {
+    document.getElementById('board-cell-0')?.focus()
+  }, [sessionKey])
+
   const rows = Array.from({ length: session.config.rows }, (_, row) => (
     <div className="board-row" role="row" key={row}>
       {Array.from({ length: session.config.columns }, (_, column) => {
@@ -79,24 +165,33 @@ export function Board({
             key={index}
             session={session}
             index={index}
-            tabIndex={focused === index ? 0 : -1}
+            tabIndex={(focusedSessionKey === sessionKey ? focused : 0) === index ? 0 : -1}
             onPrimary={primary}
-            onSecondary={secondary}
             onKeyDown={keyDown}
-            onFocus={setFocused}
+            onFocus={(index) => {
+              setFocusedSessionKey(sessionKey)
+              setFocused(index)
+            }}
             onPointerDown={pointerDown}
             onPointerUp={pointerUp}
             onPointerMove={pointerMove}
+            onPointerCancel={pointerUp}
+            onContextMenu={contextMenu}
           />
         )
       })}
     </div>
   ))
+
   return (
     <BoardViewport
       rows={session.config.rows}
       columns={session.config.columns}
       ariaLabel={t('game.board')}
+      onScroll={() => {
+        cancelPointerSession(pointer.current)
+        pointer.current = null
+      }}
     >
       <div
         className="board-grid"

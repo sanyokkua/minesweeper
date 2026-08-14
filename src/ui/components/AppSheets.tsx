@@ -7,9 +7,11 @@ import { ConfirmSheet } from './ConfirmSheet'
 import { HelpSheet } from './HelpSheet'
 import { ModalSheet } from './ModalSheet'
 import { ActionButton } from './ActionButton'
+import { SettingRow } from './SettingRow'
 import { useTranslate } from '../../i18n/useTranslate'
 import { createStorageGateway } from '../../features/persistence/storageGateway'
 import { resetLocalData } from '../../features/persistence/persistenceController'
+import { persistStore } from '../../features/persistence/persistenceController'
 import { useStore } from 'react-redux'
 import type { AppStore } from '../../app/store'
 
@@ -22,7 +24,9 @@ export function AppSheets() {
   const locale = useAppSelector((state) => state.preferences.locale)
   const appearance = useAppSelector((state) => state.preferences.appearance)
   const selectedConfig = useAppSelector((state) => state.preferences.selectedConfig)
+  const session = useAppSelector((state) => state.game.session)
   const close = () => dispatch(closeSheet())
+
   return (
     <>
       <HelpSheet open={sheet === 'help'} onClose={close} />
@@ -31,66 +35,79 @@ export function AppSheets() {
         title={t('settings.title')}
         onClose={close}
         closeLabel={t('settings.close')}
+        className="settings-sheet"
       >
-        <h3>{t('settings.language')}</h3>
-        <div className="settings-group">
-          <ActionButton
-            variant={locale === 'en' ? 'filled' : 'outline'}
-            onClick={() => dispatch(setLocale('en'))}
-          >
-            {t('settings.english')}
-          </ActionButton>
-          <ActionButton
-            variant={locale === 'uk' ? 'filled' : 'outline'}
-            onClick={() => dispatch(setLocale('uk'))}
-          >
-            {t('settings.ukrainian')}
-          </ActionButton>
-        </div>
-        <h3>{t('settings.input')}</h3>
-        <div className="settings-group">
-          <ActionButton
-            variant={inputMode === 'reveal-first' ? 'filled' : 'outline'}
-            onClick={() => dispatch(setInputMode('reveal-first'))}
-          >
-            {t('settings.revealFirst')}
-          </ActionButton>
-          <ActionButton
-            variant={inputMode === 'flag-first' ? 'filled' : 'outline'}
-            onClick={() => dispatch(setInputMode('flag-first'))}
-          >
-            {t('settings.flagFirst')}
-          </ActionButton>
-        </div>
-        <h3>{t('settings.appearance')}</h3>
-        <div className="settings-group">
-          {(['light', 'dark', 'system'] as const).map((value) => (
+        <SettingRow title={t('settings.language')}>
+          <div className="segmented">
             <ActionButton
-              key={value}
-              variant={appearance === value ? 'filled' : 'outline'}
-              onClick={() => dispatch(setAppearance(value))}
+              variant={locale === 'en' ? 'filled' : 'outline'}
+              onClick={() => dispatch(setLocale('en'))}
             >
-              {t(`settings.${value}` as 'settings.light' | 'settings.dark' | 'settings.system')}
+              {t('settings.english')}
             </ActionButton>
-          ))}
-        </div>
-        <ActionButton
-          variant="danger"
-          onClick={() => {
-            dispatch(closeSheet())
-            dispatch(openSheet('confirm-reset'))
-          }}
-        >
+            <ActionButton
+              variant={locale === 'uk' ? 'filled' : 'outline'}
+              onClick={() => dispatch(setLocale('uk'))}
+            >
+              {t('settings.ukrainian')}
+            </ActionButton>
+          </div>
+        </SettingRow>
+        <SettingRow title={t('settings.input')} description={t('settings.inputDescription')}>
+          <div className="settings-stack">
+            <ActionButton
+              variant={inputMode === 'reveal-first' ? 'filled' : 'outline'}
+              onClick={() => dispatch(setInputMode('reveal-first'))}
+            >
+              {t('settings.revealFirst')}
+            </ActionButton>
+            <ActionButton
+              variant={inputMode === 'flag-first' ? 'filled' : 'outline'}
+              onClick={() => dispatch(setInputMode('flag-first'))}
+            >
+              {t('settings.flagFirst')}
+            </ActionButton>
+          </div>
+        </SettingRow>
+        <SettingRow title={t('settings.appearance')}>
+          <div className="segmented">
+            {(['light', 'dark', 'system'] as const).map((value) => (
+              <ActionButton
+                key={value}
+                variant={appearance === value ? 'filled' : 'outline'}
+                onClick={() => dispatch(setAppearance(value))}
+              >
+                {t(`settings.${value}` as 'settings.light' | 'settings.dark' | 'settings.system')}
+              </ActionButton>
+            ))}
+          </div>
+        </SettingRow>
+        <ActionButton variant="danger" onClick={() => dispatch(openSheet('confirm-reset-data'))}>
           {t('settings.resetData')}
         </ActionButton>
       </ModalSheet>
       <ConfirmSheet
-        open={sheet === 'confirm-reset'}
+        open={sheet === 'confirm-reset-data'}
         message={t('confirm.reset')}
         onCancel={close}
         onConfirm={() => {
           resetLocalData(store, createStorageGateway())
           dispatch(closeSheet())
+        }}
+      />
+      <ConfirmSheet
+        open={sheet === 'confirm-reset-game'}
+        message={t('confirm.resetGame')}
+        onCancel={close}
+        onConfirm={() => {
+          if (session) {
+            const atMs = Date.now()
+            dispatch(newGame({ config: session.config, seed: atMs, atMs }))
+            dispatch(startRecord({ config: session.config, atMs }))
+            persistStore(store)
+          }
+          dispatch(closeSheet())
+          dispatch(navigate('game'))
         }}
       />
       <ConfirmSheet
@@ -101,6 +118,7 @@ export function AppSheets() {
           const atMs = Date.now()
           dispatch(newGame({ config: selectedConfig, seed: atMs, atMs }))
           dispatch(startRecord({ config: selectedConfig, atMs }))
+          persistStore(store)
           dispatch(navigate('game'))
           dispatch(closeSheet())
         }}
