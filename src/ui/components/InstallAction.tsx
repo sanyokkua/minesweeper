@@ -8,10 +8,11 @@ import {
     type InstallAvailability,
 } from '../../pwa/installGateway'
 
-export function InstallAction() {
+export function InstallAction({ pwaReady = false }: { pwaReady?: boolean }) {
     const t = useTranslate()
-    const [availability, setAvailability] = useState<InstallAvailability>(getInstallAvailability)
-    useEffect(() => listenForInstallPrompt(() => setAvailability(getInstallAvailability())), [])
+    const [, refresh] = useState(0)
+    useEffect(() => listenForInstallPrompt(() => refresh((value) => value + 1)), [refresh])
+    const availability: InstallAvailability = getInstallAvailability(pwaReady)
     if (availability === 'none') return null
     const promptAvailable = availability === 'prompt'
     return (
@@ -29,7 +30,6 @@ export function InstallAction() {
                     className="action-button--compact"
                     onClick={async () => {
                         await promptInstall()
-                        setAvailability(getInstallAvailability())
                     }}
                 >
                     {t('home.install')}

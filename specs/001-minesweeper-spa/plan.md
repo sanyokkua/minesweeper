@@ -10,7 +10,7 @@ Deliver a private, bilingual Minesweeper progressive web app as a Vite-built sta
 
 ## Technical Context
 
-**Language/Version**: TypeScript with strict compiler settings; Node.js 22.12+ (Vite's documented supported floor is also 20.19+). Resolve and lock the latest mutually compatible stable package versions when scaffolding from the committed lockfile.
+**Language/Version**: TypeScript with strict compiler settings; Node.js 22.22.2+ because the committed jsdom 30.0.1 lock entry requires that Node 22 floor (Vite's documented supported floor is also 20.19+). Resolve and lock the latest mutually compatible stable package versions when scaffolding from the committed lockfile.
 
 **Primary Dependencies**: React 19, Redux Toolkit with React Redux, Vite, `vite-plugin-pwa`/Workbox in generated-service-worker prompt-update mode, Vitest, React Testing Library, and Playwright. Do not add an i18n, CSS-in-JS, component-library, persistence, routing, or data-fetching dependency without a documented unmet need.
 
@@ -95,7 +95,7 @@ public/                  # Manifest icons and other local static assets
 ### 1. Establish reproducible Vite foundations and quality gates
 
 - Scaffold the Vite React TypeScript application in this repository without retaining template demo code.
-- At scaffold time, verify the official support and licence posture of every chosen package; capture exact versions in `package.json` and the one committed lockfile. Configure Node 22.12+ in local guidance and CI.
+- At scaffold time, verify the official support and licence posture of every chosen package; capture exact versions in `package.json` and the one committed lockfile. Configure Node 22.22.2+ in local guidance and CI to satisfy the locked jsdom engine floor.
 - Configure strict TypeScript (`strict`, safe index/optional-property checks where dependency declarations permit), flat ESLint, Prettier, Vitest/jsdom, React Testing Library, Playwright, and scripts for format check, lint, typecheck, unit/component tests, E2E, production build, and complete validation.
 - Configure `vite.config.ts` with `base: '/minesweeper/'`. Ensure manually constructed public URLs use `import.meta.env.BASE_URL`; do not introduce a server router or a root-relative asset URL.
 - Add CI pull-request quality gates using the lockfile and retain Playwright trace/video/screenshot artifacts on failure. Run production build/artifact validation before any Pages upload.

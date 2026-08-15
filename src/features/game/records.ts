@@ -25,7 +25,10 @@ export function updateRecords(
     const previous = records.customRecords[key]
     const customRecords = {
         ...records.customRecords,
-        [key]: previous && previous.bestSeconds <= seconds ? { ...previous, lastStartedAt: startedAt } : record,
+        [key]:
+            previous && previous.bestSeconds <= seconds
+                ? previous
+                : { bestSeconds: seconds, lastStartedAt: previous?.lastStartedAt ?? startedAt },
     }
     const entries = Object.entries(customRecords).sort(
         (left, right) => left[1].lastStartedAt - right[1].lastStartedAt || left[0].localeCompare(right[0]),

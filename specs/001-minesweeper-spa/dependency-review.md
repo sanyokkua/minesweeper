@@ -1,6 +1,6 @@
 # Dependency review
 
-Reviewed 2026-08-14 for the supported Node 22.12+ and current Chromium, Firefox, and WebKit
+Reviewed 2026-08-14 for the supported Node 22.22.2+ and current Chromium, Firefox, and WebKit
 baseline. All runtime dependencies are local, maintained, MIT/Apache-compatible packages; no
 analytics, remote asset, network data, or server dependency is permitted.
 

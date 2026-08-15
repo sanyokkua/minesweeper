@@ -321,3 +321,48 @@ In order to stick to the original design - the mockup in "docs/minesweeper-mocku
 - [X] T140 [HIGH] Reject non-finite and non-integer coordinates as unchanged domain commands instead of indexing an undefined cell, with invalid-command tests per the invalid-coordinate edge case and plan game-engine decision (missing)
 - [X] T141 [MEDIUM] Persist the accrued paused session when a blocking Help, Settings, or confirmation sheet opens and verify sheet-close/reload elapsed-time behavior per FR-011 and plan client-state lifecycle (partial)
 - [X] T142 [MEDIUM] Reject impossible active resume sessions such as playing boards with revealed mines while preserving independently valid preferences and records per FR-024, FR-025a, and the client-state persistence contract (partial)
+
+## Phase 16: Convergence
+
+- [X] T143 [HIGH] Repair the Vitest/jsdom storage setup for the blocking-sheet elapsed-time persistence test so it uses a configured browser storage boundary instead of an unavailable bare `localStorage` global, then rerun the unit, validation, and CI gates per SC-005 (complete)
+- [X] T144 [HIGH] Harden visibility and pagehide lifecycle dispatch and persistence against parallel browser lifecycle or teardown re-entrancy, and add focused evidence that timer pause/persistence completes without Redux reducer-execution or unsubscribe errors per FR-011 (complete)
+
+## Phase 17: Convergence
+
+- [X] T145 [CRITICAL] Remove or gate the Home installable/offline-ready claim on verified service-worker readiness so unsupported, uncached, or pre-first-visit states never make a false promise per Constitution II, FR-029–FR-030, and release CHK008/CHK016 (complete)
+- [X] T146 [HIGH] Instrument the production-dist offline journey to classify required application requests and fail evidence on any failed required request per Constitution VI, SC-006, and release CHK018 (complete)
+- [X] T147 [HIGH] Extend production-dist PWA evidence to retain an active game before reload and reopen and finish it from a new offline page while preserving the fresh-start path per FR-025, FR-030, the PWA delivery plan, and release CHK007/CHK010 (complete)
+- [X] T148 [HIGH] Add deterministic record coverage for better, equal, and slower whole-second results across standard and Custom identities plus the 100th/101st Custom eviction boundary and unfinished recency per FR-027, SC-005, and quality CHK023/CHK024 (complete)
+- [X] T149 [HIGH] Cover Update ready behavior with an active game and blocking sheet open, after notice dismissal, and after returning online, proving deduplication, preserved state, and explicit activation per FR-030, quality CHK013/CHK027, and release CHK013/CHK016 (complete)
+- [X] T150 [MEDIUM] Refresh durable release evidence with exact Node and browser versions, artifact path/base, timing environment, browser skips/manual limitations, and current command results per the plan release-evidence decision, quality CHK010/CHK034, and release CHK019/CHK022 (complete)
+
+## Phase 18: Convergence
+
+- [X] T151 [HIGH] Make the seeded browser loss journey deterministic across Chromium, Firefox, and WebKit by selecting a known mine or stopping on either terminal outcome before further cell clicks, then rerun the unrestricted 129-case matrix per FR-033 and SC-005 (complete)
+- [X] T152 [MEDIUM] Add and lock the Vitest-compatible `@vitest/coverage-v8` provider, verify `npm run test:coverage` enforces the configured thresholds, and document the passing coverage gate per plan: reproducible Vite foundations (complete)
+- [X] T153 [LOW] Await the install-readiness state update in `tests/component/install-action.test.tsx` so the passing component suite completes without a React `act(...)` warning per plan: quality gates (complete)
+
+## Phase 19: Convergence
+
+- [X] T154 [HIGH] Give the application-lifecycle component tests a deterministic Vitest/jsdom browser-storage boundary instead of relying on unavailable `window.localStorage`, then rerun `npm run test:unit` and refresh the recorded gate evidence per SC-005 and Constitution VI (complete)
+- [X] T155 [HIGH] Make the configured V8 coverage gate complete reliably, including the expert timer reducer test under coverage instrumentation, without weakening thresholds; rerun `npm run test:coverage` and refresh the recorded coverage evidence per plan: quality gates and Constitution VI (complete)
+- [X] T156 [HIGH] Preserve an existing Custom record’s game-start `lastStartedAt` when a better completion is recorded, and add eviction/recency regression evidence so least-recently-started semantics remain intact per FR-027 and plan: record identity and recency (complete)
+
+## Phase 20: Convergence
+
+- [X] T157 [HIGH] Repair the current Vitest/jsdom application-lifecycle storage boundary so `tests/component/app-lifecycle.test.tsx` exercises blocking-sheet and visibility/pagehide persistence instead of failing on unavailable `window.localStorage`, then rerun `npm run test:unit`, `npm run test:coverage`, and `npm run validate` and refresh `specs/001-minesweeper-spa/release-evidence.md` and `specs/001-minesweeper-spa/quickstart.md` per SC-005, FR-033, and Constitution VI (complete)
+
+## Phase 21: Convergence
+
+- [X] T158 [HIGH] Repair the current Vitest/jsdom application-lifecycle storage boundary so `tests/component/app-lifecycle.test.tsx` exercises blocking-sheet and visibility/pagehide persistence instead of failing on unavailable `window.localStorage`, then rerun `npm run test:unit`, `npm run test:coverage`, and `npm run validate` and refresh `specs/001-minesweeper-spa/release-evidence.md` and `specs/001-minesweeper-spa/quickstart.md` per SC-005, FR-033, and Constitution VI (complete)
+
+## Phase 22: Convergence
+
+- [X] T159 [HIGH] Permanently close the recurring Vitest/jsdom application-lifecycle storage-boundary failure in `tests/component/app-lifecycle.test.tsx`, which prior T143, T154, T157, and T158 entries only masked by configuring a jsdom URL or reusing an ambient browser-storage object, per SC-005, FR-011, FR-033, Constitution V–VI, and plan: reproducible Vite foundations (complete)
+  - Establish a fresh, test-owned `Map`-backed `Storage`/`StorageGateway` for each lifecycle test, following the deterministic fixture already used by `tests/unit/features/storageGateway.test.ts`; inject that exact gateway into `App` and every `hydrateStore`/persistence call under test, and inspect persisted values through the same fake rather than through browser globals.
+  - Remove every direct `localStorage`, `window.localStorage`, `Storage.prototype`, and default `createStorageGateway()` access from this lifecycle fixture and its helpers. A configured `test.environmentOptions.jsdom.url` may remain as a general app default, but it is not an implementation of this task and must not be the proof of closure.
+  - Make the two lifecycle cases independent and failure-safe: explicitly unmount each rendered tree; restore `Date.now`, `document.visibilityState`, event listeners, and spies in `afterEach`/`finally`; avoid origin-wide `localStorage.clear()` and prototype-wide write spies; and ensure no mounted test instance can observe another test's visibility/pagehide event. If the lifecycle cases cannot safely run concurrently, encode the narrowest file/test isolation needed and document why.
+  - Preserve and prove the behavioral contracts with the fake boundary: blocking-sheet open persists the accrued `1,250 ms` session time; a hidden `visibilitychange` followed by `pagehide` persists the accrued `5,000 ms` time with exactly one coalesced write; persisted data can be rehydrated; and unmount completes without throwing. Add a static guard (for example, `rg`) that fails if the forbidden ambient-storage/prototype references return to this test.
+  - Add an explicit unavailable-storage/opaque-origin check proving the lifecycle suite still passes because it uses the injected fake, not because jsdom happens to expose `window.localStorage`. Also verify the locked dependency/runtime combination under the repository's CI Node `22.12.0` (the lock currently resolves jsdom with a newer Node engine floor) or make the supported-version decision explicit before claiming reproducibility.
+  - Run and retain results from the focused lifecycle suite, the targeted persistence/storage/game-lifecycle suites, `rtk npm run test:unit`, `rtk npm run test:coverage`, `rtk npm run validate`, `rtk npm run validate:pages`, and the unrestricted browser command `rtk npm run e2e -- --reporter=line`. Do not treat a serial green run, a configured jsdom URL, or a concurrent resource-contention failure as closure evidence for this storage defect.
+  - Only after the implementation, forbidden-reference guard, isolation proof, runtime check, and all applicable gates pass, refresh `specs/001-minesweeper-spa/quickstart.md` and `specs/001-minesweeper-spa/release-evidence.md` with the actual commands, counts, environment, skips, and the test-owned storage boundary; then mark T159 complete. Do not mark it complete merely because the previous T143/T154/T157/T158 reproduction is green.

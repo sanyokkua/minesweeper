@@ -4,7 +4,7 @@ export const catalog = {
         'home.subtitle':
             'Pick a difficulty, reveal your first tile, and clear every safe cell. Choose how taps and long-presses work in Settings — it fits your hand either way.',
         'home.eyebrow': 'MINEFIELD / 01',
-        'home.badge': 'Static SPA · installable · offline-ready',
+        'home.badge': 'Static SPA · local-first',
         'home.preview': 'Minesweeper board preview',
         'home.play': 'Play',
         'home.difficulty': 'Choose difficulty',
@@ -121,7 +121,7 @@ export const catalog = {
         'home.subtitle':
             'Оберіть складність, відкрийте першу клітинку та очистьте всі безпечні місця. У Налаштуваннях можна вибрати керування дотиком і утриманням — оберіть зручний спосіб.',
         'home.eyebrow': 'МІННЕ ПОЛЕ / 01',
-        'home.badge': 'Статична SPA · встановлення · офлайн',
+        'home.badge': 'Статична SPA · локальна гра',
         'home.preview': 'Попередній перегляд поля Сапера',
         'home.play': 'Грати',
         'home.difficulty': 'Оберіть складність',

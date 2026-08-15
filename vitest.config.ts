@@ -5,6 +5,11 @@ export default defineConfig({
     plugins: [react()],
     test: {
         environment: 'jsdom',
+        environmentOptions: {
+            jsdom: {
+                url: 'http://localhost/minesweeper/',
+            },
+        },
         setupFiles: ['./tests/setup.ts'],
         globals: true,
         css: true,

@@ -67,7 +67,12 @@ const persistenceSlice = createSlice({
             if (action.payload.config.kind === 'custom') {
                 const key = canonicalConfigKey(action.payload.config)
                 const previous = state.customRecords[key]
-                if (!previous || seconds < previous.bestSeconds) state.customRecords[key] = next
+                if (!previous || seconds < previous.bestSeconds) {
+                    state.customRecords[key] = {
+                        bestSeconds: seconds,
+                        lastStartedAt: previous?.lastStartedAt ?? action.payload.atMs,
+                    }
+                }
             } else {
                 const previous = state.standardRecords[action.payload.config.kind]
                 if (!previous || seconds < previous.bestSeconds)

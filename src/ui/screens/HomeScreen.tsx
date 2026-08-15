@@ -57,7 +57,7 @@ const HOME_PREVIEW_PATTERN = [
     '1',
 ]
 
-export function HomeScreen() {
+export function HomeScreen({ pwaReady = false }: { pwaReady?: boolean }) {
     const t = useTranslate()
     const dispatch = useAppDispatch()
     const store = useStore() as AppStore
@@ -222,7 +222,7 @@ export function HomeScreen() {
                             ? t('home.best', { value: `${best.bestSeconds}s` })
                             : t('home.noRecord')}
                     </p>
-                    <InstallAction />
+                    <InstallAction pwaReady={pwaReady} />
                     <div className="footlinks">
                         <button type="button" onClick={() => dispatch(openSheet('settings'))}>
                             {t('home.settings')}

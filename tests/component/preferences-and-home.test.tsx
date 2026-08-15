@@ -63,6 +63,16 @@ describe('home preferences', () => {
         expect(container.querySelectorAll('.diff-card')).toHaveLength(4)
     })
 
+    it('does not claim installability or offline readiness before the PWA is verified', () => {
+        render(
+            <Provider store={createAppStore()}>
+                <HomeScreen />
+            </Provider>,
+        )
+
+        expect(screen.queryByText(/installable|offline-ready|офлайн/i)).not.toBeInTheDocument()
+    })
+
     it('renders the deterministic 10-column by 4-row hero field from the mockup', () => {
         const { container } = render(
             <Provider store={createAppStore()}>

@@ -47,3 +47,17 @@ export function serveDist(
         }),
     )
 }
+
+export function isRequiredApplicationRequest(request: {
+    url: () => string
+    method: () => string
+    resourceType: () => string
+}): boolean {
+    if (request.method() !== 'GET') return false
+    const url = new URL(request.url())
+    if (!url.pathname.startsWith('/minesweeper/')) return false
+    return (
+        ['document', 'script', 'stylesheet', 'font', 'manifest', 'image'].includes(request.resourceType()) ||
+        /\.(?:html|js|css|webmanifest|png|svg|woff2|ttf)$/.test(url.pathname)
+    )
+}

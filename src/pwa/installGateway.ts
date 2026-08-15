@@ -61,7 +61,8 @@ export function getInstallPrompt(): InstallEvent | null {
     return deferred
 }
 
-export function getInstallAvailability(): InstallAvailability {
+export function getInstallAvailability(serviceWorkerReady = true): InstallAvailability {
+    if (!serviceWorkerReady) return 'none'
     if (installed || isStandalone()) return 'none'
     if (deferred) return 'prompt'
     return isAndroidBrowser() ? 'manual' : 'none'
