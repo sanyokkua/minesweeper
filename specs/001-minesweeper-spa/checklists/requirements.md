@@ -1,5 +1,8 @@
 # Specification Quality Checklist: Minesweeper Static SPA
 
+**Status**: Closed — 16/16 checks complete; the implemented release is documented in
+[`../release-evidence.md`](../release-evidence.md) on 2026-08-15.
+
 **Purpose**: Validate specification completeness and quality before proceeding to planning  
 **Created**: 2026-08-13  
 **Feature**: [spec.md](../spec.md)

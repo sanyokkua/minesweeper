@@ -1,8 +1,9 @@
 # Feature Specification: Minesweeper Static SPA
 
-**Feature Branch**: Not created (spec identifier: `001-minesweeper-spa`)  
-**Created**: 2026-08-13  
-**Status**: Draft  
+**Release Branch**: `master` (merged)
+**Created**: 2026-08-13
+**Status**: Complete — implemented, validated, and deployed
+**Live application**: <https://sanyokkua.github.io/minesweeper/>
 **Input**: User description: "Build a simple, pretty, private, fully tested, bilingual browser Minesweeper as a static app for GitHub Pages, using the supplied game and visual references only as initial input."
 
 ## Clarifications

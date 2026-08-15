@@ -2,7 +2,6 @@
 service_name: "Minesweeper static SPA"
 service_id: "minesweeper-static-spa"
 domain: "Browser game"
-owner: "TODO: confirm repository owner or team"
 stack: "TypeScript, React 19, Redux Toolkit, Vite, Node.js 22.22.2+"
 project_type: "Static SPA / installable PWA"
 last_updated: "2026-08-15"
@@ -21,9 +20,9 @@ last_updated: "2026-08-15"
 | Domain | Browser game |
 | Purpose | Provide a playable Minesweeper game as a static Vite SPA/PWA. |
 | Languages | English and Ukrainian. |
-| Owner | TODO: confirm; repository metadata identifies `sanyokkua/minesweeper` and does not declare a team. |
 | Runtime | Browser; no application server. |
 | Deployment | GitHub Pages artifact under `/minesweeper/`. |
+| Live application | [sanyokkua.github.io/minesweeper](https://sanyokkua.github.io/minesweeper/) |
 | Repository | [sanyokkua/minesweeper](https://github.com/sanyokkua/minesweeper) |
 
 ## 2. Documentation map
@@ -123,6 +122,9 @@ Detailed flows and state transitions are in [`architecture.md`](architecture.md)
 | `.specify/`, `specs/`, `.agents/skills/`, `AGENTS.md` | [`development.md`](development.md#spec-driven-changes-and-agent-guidance) |
 | `docs/`, `README.md`, `LICENSE` | This documentation map, [`README.md`](../README.md), and [`operations.md`](operations.md#license-and-assets) |
 
-## 10. Known documentation gaps
+## 10. Documentation status
 
-- `TODO: confirm` the repository owner/team name.
+This documentation set was closed on 2026-08-15 after the complete task ledger, closed
+requirements/release/quality checklists, repository validation, and live Pages verification. Future
+behavior, dependency, workflow, deployment, or user-facing changes must update source, tests, and
+affected documentation together.

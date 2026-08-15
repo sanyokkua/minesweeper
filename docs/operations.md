@@ -5,6 +5,7 @@
 The application is deployed as the Vite `dist` directory to GitHub Pages. The production site is rooted at `/minesweeper/`; this path is part of the Vite build, manifest, service-worker scope, and artifact checks.
 
 There is no production server process. GitHub Pages serves static files; all game computation and local data handling occur in the browser.
+The published game is available at <https://sanyokkua.github.io/minesweeper/>.
 
 ## Continuous integration and Pages
 
@@ -29,6 +30,19 @@ The Pages workflow is configured for pushes to `master` and manual dispatch. Its
 The deploy job waits for the build job and uses `actions/deploy-pages` with `pages: write` and `id-token: write` only on the deployment job. Concurrency is grouped as `pages` with cancellation disabled.
 
 The release branch is `master`, matching the repository default branch and the Pages workflow trigger.
+
+The workflows pin current official action releases explicitly:
+
+| Action | Version | Workflows |
+|---|---|---|
+| `actions/checkout` | `v7.0.1` | CI and Pages |
+| `actions/setup-node` | `v6.5.0` | CI and Pages |
+| `actions/upload-artifact` | `v7.0.1` | CI |
+| `actions/upload-pages-artifact` | `v5.0.0` | Pages |
+| `actions/deploy-pages` | `v5.0.0` | Pages |
+
+When refreshing CI dependencies, verify the replacement tags against the corresponding official
+action release pages and update this table and the workflow contract test together.
 
 ## Build configuration
 

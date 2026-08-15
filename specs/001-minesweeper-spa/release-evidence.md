@@ -1,6 +1,31 @@
 # Release evidence
 
-Recorded 2026-08-14 for Feature 001.
+Recorded 2026-08-15 for Feature 001. Status: complete, validated, and deployed.
+
+## Release closure
+
+- Release branch: `master`.
+- Live application: <https://sanyokkua.github.io/minesweeper/>.
+- Task ledger: 160/160 task declarations checked.
+- Requirements checklist: 16/16 checks complete.
+- Quality checklist: 40/40 checks complete.
+- Release checklist: 24/24 checks complete.
+- Fresh hosted browser verification on 2026-08-15 confirmed the `Minesweeper` page title, Home
+  screen, Play transition, Beginner 9×9 board, first-cell reveal, visible `1` result, and timer
+  advancement at the deployed Pages URL.
+
+## CI action versions
+
+The workflows use these current official action releases to avoid the deprecated Node.js 20 action
+runtimes:
+
+| Action | Version | Workflow |
+| --- | --- | --- |
+| `actions/checkout` | `v7.0.1` | CI and Pages |
+| `actions/setup-node` | `v6.5.0` | CI and Pages |
+| `actions/upload-artifact` | `v7.0.1` | CI |
+| `actions/upload-pages-artifact` | `v5.0.0` | Pages |
+| `actions/deploy-pages` | `v5.0.0` | Pages |
 
 ## Validation environment
 

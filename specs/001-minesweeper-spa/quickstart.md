@@ -5,10 +5,11 @@ Use this guide after implementation. It validates the product against the contra
 ## Prerequisites
 
 - Node.js 22.22.2+ and the repository's committed lockfile. The locked jsdom 30.0.1 release
-  requires `^22.22.2 || ^24.15.0 || >=26.0.0`, so CI and package metadata use Node 22.22.2+
-  rather than the earlier 22.12.0 target.
+  requires `^22.22.2 || ^24.15.0 || >=26.0.0`, so CI and package metadata use Node 22.22.2+.
 - Playwright browsers installed from the project's documented script.
 - A clean browser profile for production-artifact PWA checks.
+
+The deployed application is available at <https://sanyokkua.github.io/minesweeper/>.
 
 ## Quality and static artifact
 

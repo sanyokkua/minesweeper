@@ -1,5 +1,8 @@
 # Requirements Quality Checklist: Minesweeper Static SPA
 
+**Status**: Closed — 40/40 checks complete; final release evidence is recorded in
+[`../release-evidence.md`](../release-evidence.md) on 2026-08-15.
+
 **Purpose**: Review the feature requirements for completeness, clarity, consistency, recovery coverage, accessibility interaction, and static-PWA release readiness before task generation.  
 **Created**: 2026-08-14  
 **Feature**: [spec.md](../spec.md)  

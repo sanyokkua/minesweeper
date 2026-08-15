@@ -19,8 +19,8 @@ jobs:
         env:
             BUILD_TIMESTAMP: ${{ github.run_started_at }}
         steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
+            - uses: actions/checkout@v7.0.1
+            - uses: actions/setup-node@v6.5.0
               with:
                   node-version: 22.22.2
                   cache: npm
@@ -28,7 +28,7 @@ jobs:
             - run: npm run validate
             - run: npm run build
             - run: npm run validate:artifact
-            - uses: actions/upload-pages-artifact@v3
+            - uses: actions/upload-pages-artifact@v5.0.0
               with:
                   path: dist
     deploy:
@@ -44,4 +44,4 @@ jobs:
             url: ${{ steps.deployment.outputs.page_url }}
         steps:
             - id: deployment
-              uses: actions/deploy-pages@v4
+              uses: actions/deploy-pages@v5.0.0

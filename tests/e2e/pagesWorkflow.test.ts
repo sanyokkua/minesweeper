@@ -12,6 +12,10 @@ describe('Pages workflow contract', () => {
         expect(workflow).toContain('concurrency:')
         expect(workflow).toContain('branches: [master]')
         expect(workflow).toContain("if: github.ref == 'refs/heads/master'")
+        expect(workflow).toContain('actions/checkout@v7.0.1')
+        expect(workflow).toContain('actions/setup-node@v6.5.0')
+        expect(workflow).toContain('actions/upload-pages-artifact@v5.0.0')
+        expect(workflow).toContain('actions/deploy-pages@v5.0.0')
     })
 
     it('runs CI quality gates on every branch push and pull request', () => {
@@ -20,6 +24,9 @@ describe('Pages workflow contract', () => {
         expect(workflow).toContain('npm ci')
         expect(workflow).toContain('npm run format:check')
         expect(workflow).toContain('npm run build')
+        expect(workflow).toContain('actions/checkout@v7.0.1')
+        expect(workflow).toContain('actions/setup-node@v6.5.0')
+        expect(workflow).toContain('actions/upload-artifact@v7.0.1')
     })
 
     it('keeps the formatting and repository-link policy explicit', () => {
@@ -30,5 +37,6 @@ describe('Pages workflow contract', () => {
         expect(prettier.printWidth).toBe(120)
         expect(prettier.tabWidth).toBe(4)
         expect(readFileSync('README.md', 'utf8')).toContain('https://github.com/sanyokkua/minesweeper')
+        expect(readFileSync('README.md', 'utf8')).toContain('https://sanyokkua.github.io/minesweeper/')
     })
 })

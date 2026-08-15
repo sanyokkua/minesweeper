@@ -1,6 +1,10 @@
 # Implementation Plan: Minesweeper Static SPA
 
-**Branch**: `001-minesweeper-spa` | **Date**: 2026-08-14 | **Spec**: [spec.md](spec.md)
+**Feature identifier**: `001-minesweeper-spa` | **Release branch**: `master` | **Date**: 2026-08-14 | **Spec**: [spec.md](spec.md)
+
+**Status**: Complete — implementation and release validation closed on 2026-08-15.
+**Release branch**: `master`
+**Live application**: <https://sanyokkua.github.io/minesweeper/>
 
 **Input**: Feature specification at `specs/001-minesweeper-spa/spec.md`, its [UI contract](ui-contract.md), and the governing constitution.
 

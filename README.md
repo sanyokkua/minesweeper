@@ -5,6 +5,7 @@ Minesweeper is a bilingual English/Ukrainian static SPA and installable PWA. It 
 The repository does not contain a backend, API, account system, database, or runtime server dependency.
 
 Source repository: <https://github.com/sanyokkua/minesweeper>
+Play the deployed game: <https://sanyokkua.github.io/minesweeper/>
 
 ## Screens
 
