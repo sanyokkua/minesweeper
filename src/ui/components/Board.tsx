@@ -131,6 +131,10 @@ export function Board({ session, inputMode = 'reveal-first', onCommand, onPrimar
     }
 
     const cancelTouchInteraction = (event?: PointerEvent<HTMLButtonElement>) => {
+        if (pointer.current === null) {
+            if (event) safelyInvokePointerCapture(() => event.currentTarget.releasePointerCapture?.(event.pointerId))
+            return
+        }
         cancelPointerSession(pointer.current)
         pointer.current = null
         suppressPrimary.current = true

@@ -50,6 +50,33 @@ describe('board', () => {
         vi.useRealTimers()
     })
 
+    it('keeps the primary action for a short touch after pointer capture is released', () => {
+        const onCommand = vi.fn()
+        const session = createGame({ kind: 'custom', rows: 5, columns: 5, mines: 1 }, 1)
+        render(
+            <Provider store={createAppStore()}>
+                <Board session={session} onCommand={onCommand} />
+            </Provider>,
+        )
+
+        const cell = screen.getByRole('gridcell', { name: /row 1, column 2, unopened/i })
+        fireEvent.pointerDown(cell, {
+            pointerId: 1,
+            pointerType: 'touch',
+            clientX: 20,
+            clientY: 20,
+        })
+        fireEvent.pointerUp(cell, { pointerId: 1, pointerType: 'touch' })
+        fireEvent(cell, new Event('lostpointercapture', { bubbles: true }))
+        fireEvent.click(cell)
+
+        expect(onCommand).toHaveBeenCalledTimes(1)
+        expect(onCommand).toHaveBeenCalledWith({
+            type: 'reveal',
+            coordinate: { row: 0, column: 1 },
+        })
+    })
+
     it('does not let a touch context-menu fallback immediately clear its flag', () => {
         const onCommand = vi.fn()
         const session = createGame({ kind: 'custom', rows: 5, columns: 5, mines: 1 }, 1)

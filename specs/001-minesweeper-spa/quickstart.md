@@ -125,3 +125,13 @@ typecheck, the static guard, unit/component tests, production build, and artifac
 `rtk npm run e2e -- --reporter=line` matrix required scoped host access after the sandbox rejected
 the local web-server bind with EPERM; the unchanged rerun passed 111 of 129 cases with 18
 capability-scoped skips across Chromium, Firefox, and WebKit.
+
+## 2026-08-15 Phase 23 convergence validation
+
+The short-touch pointer-capture regression passed in the component suite and in the focused
+Chromium production-touch journey: a normal touch still performs the primary action after
+`pointerup` and `lostpointercapture`, while interrupted gestures remain cancelled. The full
+`rtk npm run validate` gate passed with 29 files and 93 unit/component tests; coverage passed 30
+files and 96 tests at 75.66% statements, 68.80% branches, 77.11% functions, and 79.07% lines.
+Pages validation passed 1 file with 3 tests. The quality, release, and requirements checklists are
+closed with 80 of 80 items complete.

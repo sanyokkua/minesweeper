@@ -114,6 +114,19 @@ and 78.38% lines against thresholds of 70%, 60%, 65%, and 70%. `npm run validate
 lint, typecheck, unit/component tests, the production build, and artifact validation, which found 13
 local files under `/minesweeper/`. `npm run validate:pages` passed 1 file with 3 tests.
 
+## Phase 23 convergence validation
+
+Recorded 2026-08-15. A short touch now preserves the primary cell action after the browser releases
+pointer capture; an interrupted gesture still suppresses fallback actions, and the existing
+long-press flag behavior remains covered. The component regression passed within `rtk npm run
+test:unit`, which passed 29 files and 93 tests. `rtk npm run test:coverage` passed 30 files and 96
+tests at 75.66% statements, 68.80% branches, 77.11% functions, and 79.07% lines. `rtk npm run
+validate` passed formatting, lint, typecheck, lifecycle guard, unit/component tests, production
+build, and artifact validation; `rtk npm run validate:pages` passed 1 file with 3 tests. The focused
+Chromium production-touch Playwright regression passed 1 of 1 case after the initial sandbox
+`listen EPERM` capability restriction was rerun with scoped host access. Requirements, quality, and
+release checklists are all closed: 80 of 80 items complete.
+
 ## Manual browser observations
 
 - Home begins with Beginner selected and a visible Play control.

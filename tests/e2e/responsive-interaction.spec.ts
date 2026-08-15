@@ -129,6 +129,31 @@ for (const width of [320, 768, 1440]) {
 test.describe('touch long press', () => {
     test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } })
 
+    test('executes the primary action for a short touch after pointer capture is released', async ({
+        page,
+        browserName,
+    }) => {
+        test.skip(
+            browserName === 'firefox',
+            'Desktop Firefox touch emulation does not emit the PointerEvent stream used by this regression',
+        )
+        await page.goto('./')
+        await page.getByRole('button', { name: /^Play$/ }).click()
+        const cell = page.getByRole('gridcell').nth(1)
+
+        await cell.dispatchEvent('pointerdown', {
+            pointerId: 1,
+            pointerType: 'touch',
+            clientX: 20,
+            clientY: 20,
+        })
+        await cell.dispatchEvent('pointerup', { pointerId: 1, pointerType: 'touch' })
+        await cell.dispatchEvent('lostpointercapture', { pointerId: 1, pointerType: 'touch' })
+        await cell.dispatchEvent('click')
+
+        await expect(cell).toHaveAttribute('aria-label', /open/i)
+    })
+
     test('cancels movement before fallback click or context-menu actions', async ({ page, browserName }) => {
         test.skip(
             browserName === 'firefox',
