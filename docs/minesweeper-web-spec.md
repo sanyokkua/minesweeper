@@ -1,5 +1,7 @@
 # Minesweeper Web — Mini Specification
 
+> **Status:** Historical design input. The current implementation is a Vite/React static SPA/PWA, not the older Next.js application described in parts of this document. Use the current source, `.specify/memory/constitution.md`, and `specs/001-minesweeper-spa/` as authority. See [`index.md`](index.md) for the maintained documentation map.
+
 **Status:** idea / pre-implementation draft
 **Author context:** derived from `minesweeper_py` (existing Python/Qt desktop implementation, used as the source of game rules) and `dev.tools` (existing React/Next.js static-export SPA, used as the reference for stack and deployment pattern)
 **Depth:** intentionally light — product idea, screens, logic, stack, and top-level requirements only. No task breakdown, no edge-case catalogue, no test plan.
