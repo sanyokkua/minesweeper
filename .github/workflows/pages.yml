@@ -2,7 +2,7 @@ name: Deploy Pages
 
 on:
     push:
-        branches: [main]
+        branches: [master]
     workflow_dispatch:
 
 permissions:
@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
     build:
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         env:
             BUILD_TIMESTAMP: ${{ github.run_started_at }}
@@ -33,7 +33,7 @@ jobs:
                   path: dist
     deploy:
         needs: build
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
             contents: read

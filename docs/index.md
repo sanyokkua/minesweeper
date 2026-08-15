@@ -126,4 +126,3 @@ Detailed flows and state transitions are in [`architecture.md`](architecture.md)
 ## 10. Known documentation gaps
 
 - `TODO: confirm` the repository owner/team name.
-- `TODO: confirm` whether `main` or `master` is the intended repository default/release branch. The current Pages workflow triggers on `main`, while local Git metadata reported `master`; this documentation does not change either configuration.

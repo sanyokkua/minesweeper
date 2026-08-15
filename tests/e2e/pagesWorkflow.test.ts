@@ -10,7 +10,8 @@ describe('Pages workflow contract', () => {
         expect(workflow).toContain('pages: write')
         expect(workflow).toContain('id-token: write')
         expect(workflow).toContain('concurrency:')
-        expect(workflow).toContain("if: github.ref == 'refs/heads/main'")
+        expect(workflow).toContain('branches: [master]')
+        expect(workflow).toContain("if: github.ref == 'refs/heads/master'")
     })
 
     it('runs CI quality gates on every branch push and pull request', () => {

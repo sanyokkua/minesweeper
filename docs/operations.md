@@ -24,11 +24,11 @@ The CI workflow runs on pushes and pull requests with `contents: read` permissio
 
 ### `.github/workflows/pages.yml`
 
-The Pages workflow is configured for pushes to `main` and manual dispatch. Its build job is guarded by `github.ref == 'refs/heads/main'`, uses Node.js 22.22.2, installs from the lockfile, runs `npm run validate`, builds, validates the artifact, and uploads `dist` with `actions/upload-pages-artifact`.
+The Pages workflow is configured for pushes to `master` and manual dispatch. Its build job is guarded by `github.ref == 'refs/heads/master'`, uses Node.js 22.22.2, installs from the lockfile, runs `npm run validate`, builds, validates the artifact, and uploads `dist` with `actions/upload-pages-artifact`.
 
 The deploy job waits for the build job and uses `actions/deploy-pages` with `pages: write` and `id-token: write` only on the deployment job. Concurrency is grouped as `pages` with cancellation disabled.
 
-`TODO: confirm` whether `main` or `master` is the intended repository default/release branch. The workflow currently uses `main`; local Git metadata reported `master`. This documentation records the discrepancy and does not change either branch configuration.
+The release branch is `master`, matching the repository default branch and the Pages workflow trigger.
 
 ## Build configuration
 
@@ -109,7 +109,7 @@ Interpret results separately:
 | Update notice is absent | Confirm the browser is online, a waiting worker exists, and the service worker is active. |
 | Saved progress is missing | Inspect `localStorage` key `minesweeper.local-state`; malformed records are intentionally discarded or recovered without the resumable game. |
 | Playwright cannot bind its local server | Treat `listen EPERM` as an environment capability restriction, rerun the unchanged command with approved scoped host access, and report the restriction separately from product failures. |
-| Pages deployment does not run | Check that the push is to the configured `main` branch and that the build/artifact gates pass. |
+| Pages deployment does not run | Check that the push is to the configured `master` branch and that the build/artifact gates pass. |
 
 ## License and assets
 
