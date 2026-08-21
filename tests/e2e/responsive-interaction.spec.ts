@@ -1,4 +1,28 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
+
+const responsiveWidths = [320, 344, 375, 412, 430, 768, 1440] as const
+
+async function clearStorageAndOpenHome(page: Page) {
+    await page.addInitScript(() => localStorage.clear())
+    await page.goto('./')
+}
+
+async function openStandardGame(page: Page) {
+    await clearStorageAndOpenHome(page)
+    await page.getByRole('button', { name: /^Play$/ }).click()
+}
+
+async function openExpertGame(page: Page) {
+    await clearStorageAndOpenHome(page)
+    await page.getByRole('button', { name: /expert/i }).click()
+    await page.getByRole('button', { name: /^Play$/ }).click()
+}
+
+async function firstCellSide(page: Page) {
+    const box = await page.getByRole('gridcell').first().boundingBox()
+    expect(box).not.toBeNull()
+    return Math.min(box!.width, box!.height)
+}
 
 test('matches the mockup home typography and hierarchy at desktop width', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
@@ -62,27 +86,51 @@ test('matches the mockup home typography and hierarchy at desktop width', async 
     await expect(page.getByTestId('build-stamp')).toContainText(/App Build: dev version|App Build:/)
 })
 
-test('keeps mockup-sized board cells reachable at small and desktop widths', async ({ page }) => {
-    for (const width of [320, 1440]) {
+test('tracks the responsive board-cell matrix across the requested viewport widths', async ({ page }) => {
+    for (const width of responsiveWidths) {
         await page.setViewportSize({ width, height: 900 })
-        await page.addInitScript(() => localStorage.clear())
-        await page.goto('./')
-        await page.getByRole('button', { name: /^Play$/ }).click()
-        const cell = page.getByRole('gridcell').first()
-        await expect(cell).toBeVisible()
-        const box = await cell.boundingBox()
-        expect(box?.width).toBeGreaterThanOrEqual(width === 320 ? 31.9 : 36)
-        expect(box?.height).toBeGreaterThanOrEqual(width === 320 ? 31.9 : 36)
+        await openStandardGame(page)
+
+        const cellSide = await firstCellSide(page)
+        if (width === 320 || width === 344) {
+            expect(cellSide).toBeGreaterThanOrEqual(31.5)
+            expect(cellSide).toBeLessThanOrEqual(32.5)
+            continue
+        }
+
+        if (width === 375 || width === 412 || width === 430) {
+            expect(cellSide).toBeGreaterThan(32.5)
+            expect(cellSide).toBeLessThan(40.5)
+            continue
+        }
+
+        expect(cellSide).toBeGreaterThanOrEqual(39)
+        expect(cellSide).toBeLessThanOrEqual(40.5)
     }
 })
 
-for (const width of [320, 768, 1440]) {
+test('lets a fitting standard board use most of the usable board surface at wide-phone width', async ({ page }) => {
+    await page.setViewportSize({ width: 430, height: 900 })
+    await openStandardGame(page)
+
+    const occupancy = await page.locator('.board-grid').evaluate((grid) => {
+        const surface = grid.closest('.board-viewport__content') as HTMLElement | null
+        if (!surface) throw new Error('Missing board surface')
+        const surfaceStyle = getComputedStyle(surface)
+        const usableWidth =
+            surface.clientWidth -
+            Number.parseFloat(surfaceStyle.paddingLeft) -
+            Number.parseFloat(surfaceStyle.paddingRight)
+        return grid.getBoundingClientRect().width / usableWidth
+    })
+
+    expect(occupancy).toBeGreaterThanOrEqual(0.85)
+})
+
+for (const width of responsiveWidths) {
     test(`reaches every edge of the Expert board at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 })
-        await page.addInitScript(() => localStorage.clear())
-        await page.goto('./')
-        await page.getByRole('button', { name: /expert/i }).click()
-        await page.getByRole('button', { name: /^Play$/ }).click()
+        await openExpertGame(page)
         const viewport = page.locator('.board-viewport')
         await expect(viewport).toBeVisible()
 
@@ -93,12 +141,11 @@ for (const width of [320, 768, 1440]) {
             scrollHeight: element.scrollHeight,
         }))
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
-        expect(initial.scrollWidth > initial.clientWidth || initial.scrollHeight > initial.clientHeight).toBe(true)
-        if (initial.scrollWidth > initial.clientWidth) {
+        expect(initial.scrollHeight).toBeGreaterThan(initial.clientHeight)
+        await expect(page.locator('[data-edge-cue="bottom"]')).toHaveAttribute('data-visible', 'true')
+        if (width < 1440) {
+            expect(initial.scrollWidth).toBeGreaterThan(initial.clientWidth)
             await expect(page.locator('[data-edge-cue="right"]')).toHaveAttribute('data-visible', 'true')
-        }
-        if (initial.scrollHeight > initial.clientHeight) {
-            await expect(page.locator('[data-edge-cue="bottom"]')).toHaveAttribute('data-visible', 'true')
         }
 
         await viewport.evaluate((element) => {
@@ -106,25 +153,46 @@ for (const width of [320, 768, 1440]) {
             element.scrollTop = element.scrollHeight
             element.dispatchEvent(new Event('scroll', { bubbles: true }))
         })
-        if (initial.scrollWidth > initial.clientWidth) {
+        await expect(page.locator('[data-edge-cue="top"]')).toHaveAttribute('data-visible', 'true')
+        if (width < 1440) {
             await expect(page.locator('[data-edge-cue="left"]')).toHaveAttribute('data-visible', 'true')
-        }
-        if (initial.scrollHeight > initial.clientHeight) {
-            await expect(page.locator('[data-edge-cue="top"]')).toHaveAttribute('data-visible', 'true')
         }
     })
 }
 
-for (const width of [320, 768, 1440]) {
+for (const width of responsiveWidths) {
     test(`keeps the page horizontally contained at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 800 })
-        await page.goto('./')
+        await clearStorageAndOpenHome(page)
         await page.getByRole('button', { name: /^Play$/ }).click()
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
         await page.getByRole('gridcell').first().press('ArrowRight')
-        await expect(page.getByRole('grid')).toBeVisible()
+        await expect(page.getByRole('gridcell').nth(1)).toBeFocused()
     })
 }
+
+test('preserves an active game while resizing from a narrow phone to a wide phone', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 900 })
+    await openStandardGame(page)
+
+    const firstCell = page.getByRole('gridcell').first()
+    await firstCell.click()
+    const unopenedCell = page.getByRole('gridcell', { name: /unopened/i }).first()
+    const unopenedCellId = await unopenedCell.getAttribute('id')
+    expect(unopenedCellId).not.toBeNull()
+    const flaggedCell = page.locator(`#${unopenedCellId}`)
+    await flaggedCell.click({ button: 'right' })
+
+    const beforeSide = await firstCellSide(page)
+    await expect(firstCell).toHaveAttribute('aria-label', /open/i)
+    await expect(flaggedCell).toHaveAttribute('aria-label', /flagged/i)
+
+    await page.setViewportSize({ width: 430, height: 900 })
+
+    await expect(firstCell).toHaveAttribute('aria-label', /open/i)
+    await expect(flaggedCell).toHaveAttribute('aria-label', /flagged/i)
+    await expect.poll(async () => firstCellSide(page)).toBeGreaterThan(beforeSide)
+})
 
 test.describe('touch long press', () => {
     test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } })

@@ -32,7 +32,7 @@
 
 .board-grid {
     display: inline-flex;
-    --board-cell-size: clamp(32px, 3.2vw, 40px);
+    --board-cell-size: clamp(32px, 9vw, 40px);
     flex-direction: column;
     flex: 0 0 auto;
     gap: 1px;
