@@ -1,11 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { resolveBuildInfo } from './scripts/build-info.mjs'
 
 export default defineConfig({
     base: '/minesweeper/',
     define: {
-        __APP_BUILD_TIMESTAMP__: JSON.stringify(process.env.BUILD_TIMESTAMP ?? 'dev version'),
+        __APP_BUILD__: JSON.stringify(resolveBuildInfo(process.env, new Date())),
     },
     plugins: [
         react(),

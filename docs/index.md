@@ -104,7 +104,7 @@ Detailed flows and state transitions are in [`architecture.md`](architecture.md)
 - The persisted schema is `PlayerRecordV1` in [`src/features/persistence/recordCodec.ts`](../src/features/persistence/recordCodec.ts), version `1`, under `minesweeper.local-state`.
 - Presets are Beginner `9×9/10`, Intermediate `16×16/40`, and Expert `24×24/99`. Custom boards allow 5–30 rows, 5–30 columns, and 1 through cells minus 1 mines.
 - Appearance is `light`, `dark`, or `system`; input mode is `reveal-first` or `flag-first`; locale is `en` or `uk`.
-- `vite.config.ts#default` hard-codes `base: '/minesweeper/'` and maps the `BUILD_TIMESTAMP` environment key to the compile-time `__APP_BUILD_TIMESTAMP__` value used by `BuildStamp`.
+- `vite.config.ts#default` hard-codes `base: '/minesweeper/'` and defines the compile-time `__APP_BUILD__` value (`scripts/build-info.mjs#resolveBuildInfo`, from `GITHUB_RUN_NUMBER` and the build time) used by `BuildStamp`.
 - No secrets or runtime service credentials are used.
 
 ## 9. Coverage map

@@ -31,5 +31,5 @@ test('built artifact includes a deterministic application build stamp', () => {
     }
     const source = assets.join('\n')
     expect(source).toContain('App Build')
-    expect(source).toMatch(/dev version|\d{4}\.\d{2}\.\d{2} At \d{2}:\d{2}/)
+    expect(source).toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC/)
 })

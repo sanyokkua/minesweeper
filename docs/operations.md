@@ -21,7 +21,7 @@ The CI workflow runs on pushes and pull requests with `contents: read` permissio
 6. Runs Playwright even when an earlier step fails so browser evidence is retained.
 7. Uploads `playwright-report/` and `test-results/` as failure diagnostics.
 
-`BUILD_TIMESTAMP` is set from `github.run_started_at` in the CI environment.
+The footer build stamp uses the automatic `GITHUB_RUN_NUMBER` and the UTC build time (`scripts/build-info.mjs#resolveBuildInfo`); no workflow variable is needed.
 
 ### `.github/workflows/pages.yml`
 
@@ -49,8 +49,8 @@ action release pages and update this table and the workflow contract test togeth
 | Key or source | Application effect |
 |---|---|
 | `vite.config.ts#base` | Sets asset and route base to `/minesweeper/`. |
-| `BUILD_TIMESTAMP` | CI-provided build time; defaults to `dev version` locally. |
-| `vite.config.ts#define` | Injects `__APP_BUILD_TIMESTAMP__` into the bundle. |
+| `GITHUB_RUN_NUMBER` | Set automatically by GitHub Actions; absent locally, which renders `Development build`. |
+| `vite.config.ts#define` | Injects `__APP_BUILD__` (`{ number, time }` from `scripts/build-info.mjs#resolveBuildInfo`) into the bundle. |
 | `src/ui/components/BuildStamp.tsx#BuildStamp` | Renders the formatted build value in the footer. |
 | `public/manifest.webmanifest` | Defines PWA ID, start URL, scope, standalone display mode, and local icon URLs. |
 | `vite-plugin-pwa` configuration | Generates the service worker, navigation fallback, and local asset precache list. |

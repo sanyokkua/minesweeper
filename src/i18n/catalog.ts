@@ -115,6 +115,8 @@ export const catalog = {
         'notice.updateAction': 'Update',
         'common.dismiss': 'Dismiss',
         'common.buildStamp': 'App Build: {value}',
+        'common.buildNumber': 'Build {number} · {time}',
+        'common.buildDev': 'Development build · {time}',
     },
     uk: {
         'home.title': 'Сапер',
@@ -236,6 +238,8 @@ export const catalog = {
         'notice.updateAction': 'Оновити',
         'common.dismiss': 'Закрити',
         'common.buildStamp': 'Версія застосунку: {value}',
+        'common.buildNumber': 'Збірка {number} · {time}',
+        'common.buildDev': 'Збірка для розробки · {time}',
     },
 } as const
 

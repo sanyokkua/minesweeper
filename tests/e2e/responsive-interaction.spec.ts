@@ -83,7 +83,9 @@ test('matches the mockup home typography and hierarchy at desktop width', async 
         })
     expect(cardMetrics).toEqual({ paddingTop: 14, paddingLeft: 13, nameSize: 13.5, metaSize: 9, radioWidth: 15 })
     await expect(page.locator('a[href="https://github.com/sanyokkua/minesweeper"]')).toBeVisible()
-    await expect(page.getByTestId('build-stamp')).toContainText(/App Build: dev version|App Build:/)
+    await expect(page.getByTestId('build-stamp')).toContainText(
+        /App Build: (Build \d+|Development build) · \d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC/,
+    )
 })
 
 test('tracks the responsive board-cell matrix across the requested viewport widths', async ({ page }) => {
